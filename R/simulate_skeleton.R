@@ -39,8 +39,8 @@ two_broken_chains <- function(abs_cst = 1e-2, eig_cst = 0.5) {
   rand_m                <- rand_m / (max_eigen + eig_cst)
 
   # Return random matrix
-  # (i,j) means i -> j
-  return(t(rand_m))
+  # This is the transpose of an adjacency matrix with (i,j) means i -> j
+  return(rand_m)
 }
 
 
@@ -122,7 +122,8 @@ run_and_plot_simulation <- function(m_func,
                                     centrality_type = NULL) {
 
   # Call m_func once to rank order the nodes
-  template_m <- do.call("m_func", c(m_func_args))
+  # Take transpose to get adjacency matrix
+  template_m <- t(do.call("m_func", c(m_func_args)))
   nodes_info <- rank_nodes_centrality(template_m, type = centrality_type)
 
   # Run simulation
@@ -131,17 +132,19 @@ run_and_plot_simulation <- function(m_func,
                                   num_iter = num_iter)
 
   # Plot results
-  results_df <- data.table::data.table(x = sim_results)
-  results_df <- results_df[, .N, by = x]
-  with(asNamespace("ggplot2"),
-    results_plot <- ggplot(results_df,
-                           aes(x = factor(x, levels = nodes_info$node_order),
-                               y = N)) +
-      geom_bar(stat = "identity", width = 0.5) +
-      xlab("Node Index") +
-      ylab("Counts") +
-      ggtitle(paste("Distribution of Maximal Node (", num_iter, " iterations)", sep = ""))
-  )
-  results_plot
+  results_df <- data.frame(x = sim_results) %>% dplyr::count(x)
+  results_plot <- ggplot2::ggplot(results_df,
+                                  ggplot2::aes(x = factor(x, levels = nodes_info$node_order),
+                                  y = n)) +
+    ggplot2::geom_bar(stat = "identity", width = 0.5) +
+    ggplot2::xlab("Node Index ( -> Increasing Centrality )") +
+    ggplot2::ylab("Counts") +
+    ggplot2::ggtitle(paste("Distribution of Maximal Node (", num_iter, " iterations)", sep = ""))
+
+  # Add equivalent lines!
+
+  # Output graphs
+  out_graphs <- list(count_hist = results_plot,
+                     var_plot = qgraph::qgraph(template_m))
 }
 
