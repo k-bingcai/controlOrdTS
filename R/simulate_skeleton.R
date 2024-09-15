@@ -62,7 +62,7 @@ bringmann_2017_dataset1 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = 
 #' Creates empirical graph of Bringmann's paper
 #' Creates a 10-node network based on Bringmann's group networks for Dataset-2
 #' doi:10.1177/1073191116645909
-bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5) {
+bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = NULL) {
   # We retain all variables shown in the paper
   # Node mapping is given as:
   # N1: Angry
@@ -86,6 +86,13 @@ bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5) {
                 "0", "0", "0", "0", "0", "0", "0", "+", "0", "+",
                 "0", "0", "0", "0", "0", "0", "0", "0", "+", "+",
                 "-", "0", "0", "0", "0", "-", "0", "+", "+", "+"), nrow = 10, byrow = TRUE)
+
+  # Drop the nodes if specified
+  if (!is.null(drop_index)) {
+    stopifnot(class(drop_index) == "numeric")
+    # Delete rows, then columns
+    m <- m[-drop_index,][,-drop_index]
+  }
 
   # ------- WE MIGHT WANT TO WRAP THIS AS A FUNCTION --------- #
   # Get indices
