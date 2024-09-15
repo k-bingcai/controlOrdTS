@@ -16,3 +16,5 @@ Imports:
     ggplot2,
     qgraph,
     tidyr
+URL: https://github.com/k-bingcai/controlOrdTS
+BugReports: https://github.com/k-bingcai/controlOrdTS/issues
