@@ -9,6 +9,48 @@ clamp_min_weights <- function(weights, abs_cst) {
 }
 
 
+#' Creates fixed scale-free graph
+scale_free_seeded <- function(num_nodes = 10, abs_cst = 1e-2, eig_cst = 0.5,
+                              prop_zero = 0.8, prob_pos = 0.5,
+                              mode_in = c("acyclic", "random"),
+                              seed = 100) {
+
+  # Fix seed for reproducibility
+  set.seed(seed)
+
+  # Fix mode
+  mode_in <- match.arg(mode_in)
+
+  # Sample a random scale-free graph
+  num_edges <- (num_nodes ** 2) - num_nodes
+  m_adj <- igraph::sample_fitness_pl(num_nodes,
+                                     floor(num_edges * (1 - prop_zero)),
+                                     exponent.out = 2) %>%
+    as.directed(mode = mode_in) %>%
+    as_adjacency_matrix()
+
+  # Randomly set the positive and negative weights
+  m_sign  <- sample(c(-1,1), sum(m_adj), TRUE, prob = c(prob_pos, 1 - prob_pos))
+  m_scale <- rgamma(n = sum(m_adj), shape = 1, rate = 1) + abs_cst
+
+  # Update the nonzeros
+  m_adj[m_adj != 0]   <- m_adj[m_adj != 0] * m_sign * m_scale
+
+  # Add positive diagonals
+  m_diag <- rgamma(n = num_nodes, shape = 1, rate = 1) + abs_cst
+  rand_m  <- m_adj + diag(m_diag)
+
+  # Rescale for stationarity
+  max_eigen             <- max(Mod(eigen(rand_m)$values))
+  rand_m                <- rand_m / (max_eigen + eig_cst)
+
+  # This is the transpose of an adjacency matrix
+  # typical adjacency matrix: (i,j) means i -> j
+  return(as.matrix(rand_m))
+
+}
+
+
 #' Creates empirical graph of Bringmann's paper
 #' Creates a 6-node network based on Bringmann's group networks for Dataset-1
 #' doi:10.1177/1073191116645909
@@ -53,7 +95,8 @@ bringmann_2017_dataset1 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = 
   rand_m                <- rand_m / (max_eigen + eig_cst)
 
   # Return random matrix
-  # This is the transpose of an adjacency matrix with (i,j) means i -> j
+  # This is the transpose of an adjacency matrix
+  # typical adjacency matrix: (i,j) means i -> j
   return(rand_m)
 }
 
@@ -111,7 +154,8 @@ bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = 
   rand_m                <- rand_m / (max_eigen + eig_cst)
 
   # Return random matrix
-  # This is the transpose of an adjacency matrix with (i,j) means i -> j
+  # This is the transpose of an adjacency matrix
+  # typical adjacency matrix: (i,j) means i -> j
   return(rand_m)
 
 }
@@ -146,6 +190,7 @@ two_broken_chains <- function(abs_cst = 1e-2, eig_cst = 0.5) {
   # Generate random matrix
   rand_m                <- m
   rand_weights          <- rnorm(n = length(AB_idx))
+  rand_weights          <- rand_weights + sign(rand_weights) * abs_cst
   rand_m[AB_idx]        <- clamp_min_weights(rand_weights, abs_cst = abs_cst)
   rand_m[Z_idx]         <- rgamma(n = length(Z_idx), shape = 1, rate = 1)
   class(rand_m)         <- "numeric"
@@ -153,7 +198,8 @@ two_broken_chains <- function(abs_cst = 1e-2, eig_cst = 0.5) {
   rand_m                <- rand_m / (max_eigen + eig_cst)
 
   # Return random matrix
-  # This is the transpose of an adjacency matrix with (i,j) means i -> j
+  # This is the transpose of an adjacency matrix
+  # typical adjacency matrix: (i,j) means i -> j
   return(rand_m)
 }
 
@@ -232,13 +278,22 @@ simulate_gramian <- function(m_func,
     # Generate random matrix
     gen_m <- do.call("m_func", c(m_func_args))
 
+    # Sanity check that skeleton is the same
+    if (i == 1) {
+      skeleton_m <- as.matrix(gen_m) != 0
+    } else {
+      skeleton_i <- as.matrix(gen_m) != 0
+      stopifnot(all(skeleton_m == skeleton_i))
+    }
+
     # Calculate gramian
     dgramian_m            <- diag(netcontrol::control_gramian(A = gen_m,
                                                               B = diag(dim(gen_m)[1])))
 
     # Calculate centrality if given
     if (!is.null(c_func)) {
-      centrality_m <- do.call("c_func", c(list(input_adj_m = gen_m),
+      # Use transpose as input!
+      centrality_m <- do.call("c_func", c(list(input_adj_m = t(gen_m)),
                                           c_func_args))
     }
 
@@ -299,8 +354,10 @@ run_and_plot_simulation <- function(m_func,
     # Get unique degrees for the matrix
     uniq_degrees <- Reduce(function(x,y) {if (identical(x,y)) x else FALSE},
                            lapply(sim_results, function(x) {x[["centrality_out"]]}))
-    if (any(!uniq_degrees)) {
-      stop("[ERROR] Non-unique degrees in graph.")
+    if (is.logical(uniq_degrees)) {
+      if (!uniq_degrees) {
+        stop("[ERROR] Non-unique degrees in graph.")
+      }
     }
 
     # Sort the nodes and summarize info
