@@ -16,6 +16,9 @@ simulateVAR <- R6::R6Class("simulateVAR",
         verbose = NULL,
         saved_params = NULL,
         fixed_params = FALSE,
+        custom_name = NULL,
+        custom_tags = NULL,
+        valid_ord_cats = c(3,5,7),
 
         # Initialization method
         initialize = function(Phi, Psi,
@@ -43,6 +46,16 @@ simulateVAR <- R6::R6Class("simulateVAR",
             # Perform checks
             private$run_init_checks()
 
+        },
+
+        # Set custom name
+        set_custom_name = function(modname) {
+            self$custom_name <- modname
+        },
+
+        # Set custom tags
+        set_custom_tags = function(tags) {
+            self$custom_tags <- tags
         },
 
         # Method to clear saved params
@@ -338,14 +351,21 @@ simulateVAR <- R6::R6Class("simulateVAR",
             # Generate the raw time series
             params <- private$generate_raw_ts(params, time_len)
             
-            # Discretize the observations is applicable
-            if (!is.null(num.ord.out) && !params[["nan.vals.exist"]]) {
+            # Discretize the TS for all valid ordinal levels
+            if (!params[["nan.vals.exist"]]) {
+                for (valid_ord in self$valid_ord_cats) {
 
-                # Discretize
-                params <- private$discretize_raw_ts(params, num.ord.out)
+                    # Discretize
+                    params <- private$discretize_raw_ts(params, valid_ord)
+
+                }
+            }
+
+            # Discretize the observations is applicable
+            if (!is.null(num.ord.out)) {
 
                 # Copy the relevant data to the outputs
-                params[["out.ts"]] <- params[["ord.ts"]]
+                params[["out.ts"]] <- params[["ord.ts"]][[as.character(num.ord.out)]]
 
             } else {
 
@@ -453,7 +473,7 @@ simulateVAR <- R6::R6Class("simulateVAR",
                                                      levels = as.character(seq(1,num.ord.out))))
 
             # Save to params list
-            params[["ord.ts"]] <- person_i_ts_ordinal
+            params[["ord.ts"]][[as.character(num.ord.out)]] <- person_i_ts_ordinal
 
             # Return params
             return(params)

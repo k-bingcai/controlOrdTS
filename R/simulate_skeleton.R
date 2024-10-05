@@ -1,5 +1,20 @@
 # ----- Code to simulate gramian vs centrality for given skeleton graphs ----- #
 
+#' Need a function to generate a random positive definite Psi matrix
+random_Psi <- function(nvars) {
+
+  # Create symmetric positive definite matrix
+  pos_cst <- 0.5
+  L       <- matrix(rnorm(nvars ** 2), nrow = nvars)
+  A       <- L %*% t(L)
+  c       <- min(eigen(A)$values)
+  Psi     <- A + diag(nvars) * (abs(c) + pos_cst)
+
+  # Sanity check
+  stopifnot(min(eigen(Psi)$values) > 0)
+  return(Psi)
+}
+
 #' Helper function to ensure the weights are at least a certain magnitude
 clamp_min_weights <- function(weights, abs_cst) {
   out_weights <- ifelse(abs(weights) < abs_cst,
