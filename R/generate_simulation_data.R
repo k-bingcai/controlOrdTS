@@ -1,5 +1,5 @@
 # --- This code is to be used for simulation purposes only --- #
-# --- SPLIT THIS FILE INTO DATA GENERATION / MODEL FITTING --- @
+# --- SPLIT THIS FILE INTO DATA GENERATION / MODEL FITTING / RESULT EXTRACTION --- #
 
 
 #' Creates simulation object based on simulation parameters
@@ -55,7 +55,8 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts, num.or
     stopifnot(sim_obj$fixed_params == TRUE)
 
     # Initialize container 
-    mc_ts_list <- vector("list", num_mc_samples) 
+    mc_ts_list  <- vector("list", num_mc_samples) 
+    mc_mod_list <- vector("list", num_mc_samples)
 
     # mc.sample loop should be here
     for (mc_i in 1:num_mc_samples) {
@@ -64,8 +65,16 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts, num.or
         cat(paste0("Generating TS for Monte Carlo sample ", mc_i))
 
         # Generating TS data 
-        mc_ts_list[[mc_i]] <- sim_obj$generate_ts_from_model(time_len = max_timepts,
-                                                             num.ord.out = num.ord.out)
+        gen_mod_i <- sim_obj$generate_ts_from_model(time_len = max_timepts,
+                                                    num.ord.out = num.ord.out)
+        mc_mod_list[[mc_i]] <- gen_mod_i
+
+        # Extract relevant time series 
+        if (is.null(num.ord.out)) {
+            mc_ts_list[[mc_i]] <- gen_mod_i$raw.ts
+        } else {
+            mc_ts_list[[mc_i]] <- gen_mod_i$ord.ts[[as.character(num.ord.out)]]
+        }
 
     }
 
@@ -81,12 +90,12 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts, num.or
                                       y = params_list_to_check))
         return(all_params_eq)
     }
-    all_Phi_equal <- check_eq_params(sim_obj$saved_params, mc_ts_list,
+    all_Phi_equal <- check_eq_params(sim_obj$saved_params, mc_mod_list,
                                      check.type = "Phi")
-    all_Psi_equal <- check_eq_params(sim_obj$saved_params, mc_ts_list,
+    all_Psi_equal <- check_eq_params(sim_obj$saved_params, mc_mod_list,
                                      check.type = "Psi")
     if (!is.null(sim_obj$num.ord)){
-      all_thres_equal <- check_eq_params(sim_obj$saved_params, mc_ts_list,
+      all_thres_equal <- check_eq_params(sim_obj$saved_params, mc_mod_list,
                                          check.type = "raw.thres")
     } else {
       all_thres_equal <- TRUE
