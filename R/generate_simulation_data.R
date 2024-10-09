@@ -48,7 +48,7 @@ create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7) {
 }
 
 #' Generate multiple TS from a given simulation object
-generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts, num.ord.out = NULL) {
+generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts) {
 
     # Check that params have been created
     stopifnot(!is.null(sim_obj$saved_params))
@@ -65,16 +65,15 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts, num.or
         cat(paste0("Generating TS for Monte Carlo sample ", mc_i))
 
         # Generating TS data 
-        gen_mod_i <- sim_obj$generate_ts_from_model(time_len = max_timepts,
-                                                    num.ord.out = num.ord.out)
+        gen_mod_i <- sim_obj$generate_ts_from_model(time_len = max_timepts)
         mc_mod_list[[mc_i]] <- gen_mod_i
 
-        # Extract relevant time series 
-        if (is.null(num.ord.out)) {
-            mc_ts_list[[mc_i]] <- gen_mod_i$raw.ts
-        } else {
-            mc_ts_list[[mc_i]] <- gen_mod_i$ord.ts[[as.character(num.ord.out)]]
-        }
+        # # Extract relevant time series 
+        # if (is.null(num.ord.out)) {
+        #     mc_ts_list[[mc_i]] <- gen_mod_i$raw.ts
+        # } else {
+        #     mc_ts_list[[mc_i]] <- gen_mod_i$ord.ts[[as.character(num.ord.out)]]
+        # }
 
     }
 
@@ -102,7 +101,32 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts, num.or
     }
     stopifnot(all_Phi_equal, all_Phi_equal, all_thres_equal)
 
-    return(mc_ts_list)
+
+    # We rearrange the time series generated into 
+    # ordinf
+    # +-- mc1
+    # +-- mc2
+    # ...
+    # +-- mc100
+    # ord7
+    # +-- mc1
+    # +-- mc2
+    # ...
+    # +-- mc100
+    # ord5
+    # +-- mc1
+    # +-- mc2
+    # Each mc_i uses the same underlying raw.ts
+    ordinf_ts   <- lapply(mc_mod_list, function(x) x[["raw.ts"]])
+    ord7_ts     <- lapply(mc_mod_list, function(x) x[["ord.ts"]][["7"]])
+    ord5_ts     <- lapply(mc_mod_list, function(x) x[["ord.ts"]][["5"]])
+    ord3_ts     <- lapply(mc_mod_list, function(x) x[["ord.ts"]][["3"]])
+    out_list    <- list(ordinf = ordinf_ts,
+                        ord7 = ord7_ts,
+                        ord5 = ord5_ts,
+                        ord3 = ord3_ts)
+
+    return(out_list)
 }
 
 

@@ -24,11 +24,11 @@ sVAR_sim$Psi
 
 # Test run-simulations code here
 test_simobj <- create_sim_obj(bringmann_2017_dataset1)
-gen_ts <- generate_TS_from_simobj(test_simobj, num_mc_samples = 5, max_timepts = 500, num.ord.out = 3)
+gen_ts <- generate_TS_from_simobj(test_simobj, num_mc_samples = 5, max_timepts = 500)# , num.ord.out = 3)
 # lav_fit_1 <- run_simulation_one_ts(gen_ts[[1]]$ord.ts[["5"]], timepts_vec = c(50,100,200,500))
 
 
-lav_fit_all <- run_simulation_multi_ts(gen_ts, timepts_vec = c(50,100,200,500))
+lav_fit_all <- run_simulation_multi_ts(gen_ts$ord5, timepts_vec = c(50,100,200,500), ord_as_cont = TRUE)
 
 tPhi <- test_simobj$saved_params$Phi
 tPsi <- test_simobj$saved_params$Psi
