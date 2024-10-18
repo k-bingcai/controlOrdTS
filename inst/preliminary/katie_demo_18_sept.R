@@ -92,30 +92,30 @@ run_and_plot_simulation(m_func = bringmann_2017_dataset2,
 
 
 # 10-node scale free
-scale_free_mat <- scale_free_seeded(abs_cst = 2, prop_zero = 0.7, seed = 5000)
+scale_free_mat <- scale_free_seeded(abs_cst = 2, prop_zero = 0.7, seed = 3500)
 qgraph::qgraph(t(scale_free_mat))
 
 
 run_and_plot_simulation(m_func = scale_free_seeded,
-                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 5000),
+                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 3500),
                         centrality_type = "degree",
                         metric_type = "dgramian",
                         plot_type = "boxplot")
 
 run_and_plot_simulation(m_func = scale_free_seeded,
-                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 5000),
+                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 3500),
                         centrality_type = "degree",
                         metric_type = "max_node",
                         plot_type = "histogram")
 
 run_and_plot_simulation(m_func = scale_free_seeded,
-                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 5000),
+                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 3500),
                         centrality_type = "betweenness",
                         metric_type = "dgramian",
                         plot_type = "correlation")
 
 run_and_plot_simulation(m_func = scale_free_seeded,
-                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 5000),
+                        m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = 3500),
                         centrality_type = "closeness",
                         metric_type = "dgramian",
                         plot_type = "correlation")

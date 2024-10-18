@@ -1,0 +1,4 @@
+{
+    "models": ["bringmann_2017_dataset1", "bringmann_2017_dataset2", "scale_free_seeded"],
+    "seeds": ["NA", "NA", "3500"]
+}

@@ -145,4 +145,5 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts) {
 # |   |   +-- TS_list_model_1_ord7.RDS
 # |   |   +-- TS_list_model_1_ord5.RDS
 # |   |   +-- TS_list_model_1_ord3.RDS
+# |   +-- fitted (?)
 # |   +-- results (?)

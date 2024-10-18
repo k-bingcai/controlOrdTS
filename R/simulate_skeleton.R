@@ -28,21 +28,44 @@ clamp_min_weights <- function(weights, abs_cst) {
 scale_free_seeded <- function(num_nodes = 10, abs_cst = 1e-2, eig_cst = 0.5,
                               prop_zero = 0.8, prob_pos = 0.5,
                               mode_in = c("acyclic", "random"),
-                              seed = 100) {
-
-  # Fix seed for reproducibility
-  set.seed(seed)
+                              seed = 100, generate_skeleton = FALSE) {
 
   # Fix mode
   mode_in <- match.arg(mode_in)
 
-  # Sample a random scale-free graph
-  num_edges <- (num_nodes ** 2) - num_nodes
-  m_adj <- igraph::sample_fitness_pl(num_nodes,
-                                     floor(num_edges * (1 - prop_zero)),
-                                     exponent.out = 2) %>%
-    as.directed(mode = mode_in) %>%
-    as_adjacency_matrix()
+  # Skeleton only
+  if (generate_skeleton) {
+
+    # Fix seed for reproducibility
+    set.seed(seed)
+
+    # Sample a random scale-free graph
+    num_edges <- (num_nodes ** 2) - num_nodes
+    m_adj <- igraph::sample_fitness_pl(num_nodes,
+                                       floor(num_edges * (1 - prop_zero)),
+                                       exponent.out = 2) %>%
+      igraph::as.directed(mode = mode_in) %>%
+      igraph::as_adjacency_matrix()
+
+    # Exit condition
+    return(as.matrix(m_adj))
+
+  } else {
+
+    # Generate skeleton
+    m_adj <- scale_free_seeded(num_nodes = num_nodes,
+                               abs_cst = abs_cst,
+                               eig_cst = eig_cst,
+                               prop_zero = prop_zero,
+                               prob_pos = prob_pos,
+                               mode_in = mode_in,
+                               seed = seed,
+                               generate_skeleton = TRUE)
+
+    # Reset the seed
+    set.seed(NULL)
+
+  }
 
   # Randomly set the positive and negative weights
   m_sign  <- sample(c(-1,1), sum(m_adj), TRUE, prob = c(prob_pos, 1 - prob_pos))
