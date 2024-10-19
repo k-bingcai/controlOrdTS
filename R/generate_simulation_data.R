@@ -48,6 +48,8 @@ create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7) {
 }
 
 #' Generate multiple TS from a given simulation object
+#' 
+#' @export
 generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts) {
 
     # Check that params have been created
