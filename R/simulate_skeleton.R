@@ -25,6 +25,8 @@ clamp_min_weights <- function(weights, abs_cst) {
 
 
 #' Creates fixed scale-free graph
+#' 
+#' @export
 scale_free_seeded <- function(num_nodes = 10, abs_cst = 1e-2, eig_cst = 0.5,
                               prop_zero = 0.8, prob_pos = 0.5,
                               mode_in = c("acyclic", "random"),
@@ -92,6 +94,8 @@ scale_free_seeded <- function(num_nodes = 10, abs_cst = 1e-2, eig_cst = 0.5,
 #' Creates empirical graph of Bringmann's paper
 #' Creates a 6-node network based on Bringmann's group networks for Dataset-1
 #' doi:10.1177/1073191116645909
+#' 
+#' @export
 bringmann_2017_dataset1 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = NULL) {
   # Node mapping is given as:
   # N1: Anxious
@@ -143,6 +147,8 @@ bringmann_2017_dataset1 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = 
 #' Creates empirical graph of Bringmann's paper
 #' Creates a 10-node network based on Bringmann's group networks for Dataset-2
 #' doi:10.1177/1073191116645909
+#' 
+#' @export
 bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = NULL) {
   # We retain all variables shown in the paper
   # Node mapping is given as:
@@ -201,7 +207,8 @@ bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = 
 
 
 #' Creates two broken chains with random parameters
-#'
+#' 
+#' @export
 two_broken_chains <- function(abs_cst = 1e-2, eig_cst = 0.5) {
   # We generate two broken chains
   # A: 1 -> 2 -> 3 -> 4 -> 5
