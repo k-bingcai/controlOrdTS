@@ -4,7 +4,14 @@
 \alias{simulate_gramian}
 \title{Compute gramian for random parameter values}
 \usage{
-simulate_gramian(m_func, num_iter = 1000, m_func_args = list())
+simulate_gramian(
+  m_func,
+  c_func = NULL,
+  num_iter = 1000,
+  m_func_args = list(),
+  c_func_args = list(),
+  out_type = c("max_node", "dgramian")
+)
 }
 \description{
 Compute gramian for random parameter values

@@ -4,10 +4,7 @@
 \alias{rank_nodes_centrality}
 \title{Rank order the nodes based on centrality}
 \usage{
-rank_nodes_centrality(
-  input_adj_m,
-  type = c("degree", "betweenness", "closeness")
-)
+rank_nodes_centrality(centrality)
 }
 \description{
 Rank order the nodes based on centrality

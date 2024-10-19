@@ -8,7 +8,9 @@ run_and_plot_simulation(
   m_func,
   m_func_args = list(),
   num_iter = 1000,
-  centrality_type = NULL
+  centrality_type = c("degree", "betweenness", "closeness"),
+  metric_type = c("max_node", "dgramian"),
+  plot_type = c("boxplot", "histogram", "correlation")
 )
 }
 \description{
