@@ -55,10 +55,11 @@ for (mod_i in 1:length(model_json_list$models)) {
     # `i' is for different skeletons (e.g. bringmann_dataset_1)
 
     # Add print statements for logging
-    cat(paste0("[INFO] Generating for model: ", mod_i))
+    mod_i_name <- model_json_list$models[mod_i]
+    cat(paste0("[INFO] Generating for model: ", mod_i_name, "\n"))
 
     # Create folders 
-    mod_i_save_folder <- paste0(args$models_out_loc, "/", model_json_list$models[mod_i])
+    mod_i_save_folder <- paste0(args$models_out_loc, "/", mod_i_name)
     create_dir_not_exist(mod_i_save_folder)
 
     # Create mod_arg_list
@@ -77,7 +78,7 @@ for (mod_i in 1:length(model_json_list$models)) {
         # `j' is for different `people' for a given skeleton model
 
         # Add print statements for logging
-        cat(paste0("[INFO] Generating for model: ", mod_i, " ; mc iteration = ", mod_ij))
+        cat(paste0("[INFO] Generating for model: ", mod_i, " ; mc iteration = ", mod_ij, "\n"))
 
         # Create model 
         gen_ij_model   <- controlOrdTS::create_sim_obj(phi.func = get(mod_i_func),
