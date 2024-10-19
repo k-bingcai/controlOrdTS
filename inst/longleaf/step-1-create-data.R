@@ -56,13 +56,13 @@ for (mod_i in 1:length(model_json_list$models)) {
     cat(paste0("[INFO] Generating for model: ", mod_i))
 
     # Create folders 
-    mod_i_save_folder <- paste0(args$models_out_loc, "/", mod_i)
+    mod_i_save_folder <- paste0(args$models_out_loc, "/", model_json_list$models[mod_i])
     create_dir_not_exist(mod_i_save_folder)
 
     # Create mod_arg_list
     mod_i_arg_list    <- list()
     mod_i_seed      <- model_json_list$seeds[mod_i]
-    if (!is.na()) {
+    if (!is.na(mod_i_seed)) {
         mod_i_arg_list$seed <- mod_i_seed
     }
 
