@@ -56,7 +56,7 @@ for (mod_i in 1:length(model_json_list$models)) {
 
     # Add print statements for logging
     mod_i_name <- model_json_list$models[mod_i]
-    cat(paste0("[INFO] Generating for model: ", mod_i_name, "\n"))
+    cat(paste0("[INFO] Begin generation for model: ", mod_i_name, "\n"))
 
     # Create folders 
     mod_i_save_folder <- paste0(args$models_out_loc, "/", mod_i_name)
@@ -70,7 +70,7 @@ for (mod_i in 1:length(model_json_list$models)) {
     }
 
     # Function to call 
-    mod_i_func    <- paste("controlOrdTS::", mod_i, sep = "")
+    mod_i_func    <- paste("controlOrdTS::", mod_i_name, sep = "")
 
     # Loop through random j iterations of this model 
     for (mod_ij in 1:num_random) {
@@ -78,7 +78,7 @@ for (mod_i in 1:length(model_json_list$models)) {
         # `j' is for different `people' for a given skeleton model
 
         # Add print statements for logging
-        cat(paste0("[INFO] Generating for model: ", mod_i, " ; mc iteration = ", mod_ij, "\n"))
+        cat(paste0("[INFO] Generating for model: ", mod_i_name, " ; mc iteration = ", mod_ij, "\n"))
 
         # Create model 
         gen_ij_model   <- controlOrdTS::create_sim_obj(phi.func = get(mod_i_func),
