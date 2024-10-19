@@ -9,6 +9,8 @@ library(rjson)
 parser <- ArgumentParser(description = "Step 1: Create simulation objects")
 parser$add_argument('--models_json_file', required = TRUE, help = "JSON file containing simulation conditions")
 parser$add_argument('--models_out_loc', required = TRUE, help = "Location for models to be saved to")
+parser$add_argument('--num_indv_models', required = TRUE, help = "Number of individual models to create for each skeleton model")
+parser$add_argument('--num_mc_samples', required = TRUE, help = "Number of Monte Carlo sample replicates")
 
 # Parse arguments 
 args <- parser$parse_args()
@@ -18,10 +20,10 @@ model_json_list         <- fromJSON(file = args$models_json_file)
 model_json_list$seeds   <- suppressWarnings(as.integer(model_json_list$seeds))
 
 # Number of individual models to create for each skeleton model
-num_random <- 100
+num_random <- as.integer(args$num_indv_models)
 
 # Number of mc replicates 
-num_mc_samples <- 500
+num_mc_samples <- as.integer(args$num_mc_samples)
 
 # Maximum number of timepoints 
 max_timepts <- 500
