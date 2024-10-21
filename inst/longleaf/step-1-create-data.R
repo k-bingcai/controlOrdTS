@@ -4,6 +4,7 @@ set.seed(100)
 # Load libraries 
 library(argparse)
 library(rjson)
+library(controlOrdTS)
 
 # Read in arguments from CLI
 parser <- ArgumentParser(description = "Step 1: Create simulation objects")
@@ -39,7 +40,7 @@ create_dir_not_exist <- function(dir_name) {
 # Convenience function to save file if it does not already exist 
 save_RDS_if_not_exist <- function(file_name, obj_to_save) {
     if (!file.exists(file_name)) {
-        saveRDS(obj_to_save, file = save_file)
+        saveRDS(obj_to_save, file = file_name)
     } else {
         stop("File to save already exists!")
     }
@@ -70,7 +71,7 @@ for (mod_i in 1:length(model_json_list$models)) {
     }
 
     # Function to call 
-    mod_i_func    <- paste("controlOrdTS::", mod_i_name, sep = "")
+    mod_i_func    <- mod_i_name
 
     # Loop through random j iterations of this model 
     for (mod_ij in 1:num_random) {
@@ -83,12 +84,12 @@ for (mod_i in 1:length(model_json_list$models)) {
         # Create model 
         gen_ij_model   <- controlOrdTS::create_sim_obj(phi.func = get(mod_i_func),
                                                        phi.func.args = mod_i_arg_list)
-        gen_ij_ts      <- controlOrdTS::generate_TS_from_simobj(gen_model, 
+        gen_ij_ts      <- controlOrdTS::generate_TS_from_simobj(gen_ij_model, 
                                                                 num_mc_samples = num_mc_samples, 
                                                                 max_timepts = max_timepts)
         
         # Save locations
-        mod_ij_main_saveloc     <- paste0(mod_i_save_folder, "model_", mod_ij)
+        mod_ij_main_saveloc     <- paste0(mod_i_save_folder, "/model_", mod_ij)
         mod_ij_simobj_saveloc   <- paste0(mod_ij_main_saveloc, "/simobj")
         mod_ij_data_saveloc     <- paste0(mod_ij_main_saveloc, "/data")
         create_dir_not_exist(mod_ij_main_saveloc)
