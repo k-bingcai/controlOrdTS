@@ -13,7 +13,6 @@ simulateVAR <- R6::R6Class("simulateVAR",
         burn.in = NULL,
         max.tries = NULL,
         num_var = NULL,
-        verbose = NULL,
         saved_params = NULL,
         fixed_params = FALSE,
         custom_name = NULL,
@@ -23,7 +22,7 @@ simulateVAR <- R6::R6Class("simulateVAR",
         # Initialization method
         initialize = function(Phi, Psi,
                               num.ord.max = 7,
-                              burn.in = 1000, max.tries = 100, verbose = TRUE, fixed_params = TRUE) {
+                              burn.in = 1000, max.tries = 100, fixed_params = TRUE) {
 
             # Save inputs as attributes
             self$Phi            <- Phi
@@ -31,7 +30,6 @@ simulateVAR <- R6::R6Class("simulateVAR",
             self$num.ord.max    <- num.ord.max
             self$burn.in        <- burn.in
             self$max.tries      <- max.tries
-            self$verbose        <- verbose
             self$fixed_params   <- fixed_params
 
             # Initialize saved_params
@@ -77,7 +75,8 @@ simulateVAR <- R6::R6Class("simulateVAR",
         # Method to create data in batch mode
         generate_ts_from_model = function(time_len = 100,
                                           num.ord.out = NULL,
-                                          initialize = FALSE) {
+                                          initialize = FALSE,
+                                          verbose = TRUE) {
 
             # Force users to initialize models first
             if (self$fixed_params) {
@@ -119,7 +118,7 @@ simulateVAR <- R6::R6Class("simulateVAR",
                 } 
 
                 # Log progress to console
-                if (self$verbose && ts_created) {
+                if (verbose && ts_created) {
                     if (!initialize) {
                         cat(paste("[INFO] Attempt ", try_num, " / ", self$max.tries,
                                 "; Successfully generated time series.",

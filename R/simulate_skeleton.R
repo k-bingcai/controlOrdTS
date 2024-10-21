@@ -49,6 +49,10 @@ scale_free_seeded <- function(num_nodes = 10, abs_cst = 1e-2, eig_cst = 0.5,
       igraph::as.directed(mode = mode_in) %>%
       igraph::as_adjacency_matrix()
 
+    # Add signs
+    m_sign  <- sample(c(-1,1), sum(m_adj), TRUE, prob = c(prob_pos, 1 - prob_pos))
+    m_adj[m_adj != 0]   <- m_adj[m_adj != 0] * m_sign
+
     # Exit condition
     return(as.matrix(m_adj))
 
@@ -70,11 +74,10 @@ scale_free_seeded <- function(num_nodes = 10, abs_cst = 1e-2, eig_cst = 0.5,
   }
 
   # Randomly set the positive and negative weights
-  m_sign  <- sample(c(-1,1), sum(m_adj), TRUE, prob = c(prob_pos, 1 - prob_pos))
-  m_scale <- rgamma(n = sum(m_adj), shape = 1, rate = 1) + abs_cst
+  m_scale <- rgamma(n = sum(m_adj != 0), shape = 1, rate = 1) + abs_cst
 
   # Update the nonzeros
-  m_adj[m_adj != 0]   <- m_adj[m_adj != 0] * m_sign * m_scale
+  m_adj[m_adj != 0]   <- m_adj[m_adj != 0] * m_scale 
 
   # Add positive diagonals
   m_diag <- rgamma(n = num_nodes, shape = 1, rate = 1) + abs_cst

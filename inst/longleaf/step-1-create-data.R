@@ -78,7 +78,7 @@ for (mod_i in 1:length(model_json_list$models)) {
         # `j' is for different `people' for a given skeleton model
 
         # Add print statements for logging
-        cat(paste0("[INFO] Generating for model: ", mod_i_name, " ; mc iteration = ", mod_ij, "\n"))
+        cat(paste0("[INFO] Generating for model: ", mod_i_name, " ; mc iteration = ", mod_ij))
 
         # Create model 
         gen_ij_model   <- controlOrdTS::create_sim_obj(phi.func = get(mod_i_func),

@@ -64,10 +64,10 @@ generate_TS_from_simobj <- function(sim_obj, num_mc_samples, max_timepts) {
     for (mc_i in 1:num_mc_samples) {
 
         # Print out to console
-        cat(paste0("Generating TS for Monte Carlo sample ", mc_i))
+        cat(paste0("[INFO] Generating TS for Monte Carlo sample ", mc_i))
 
         # Generating TS data 
-        gen_mod_i <- sim_obj$generate_ts_from_model(time_len = max_timepts)
+        gen_mod_i <- sim_obj$generate_ts_from_model(time_len = max_timepts, verbose = FALSE)
         mc_mod_list[[mc_i]] <- gen_mod_i
 
         # # Extract relevant time series 
