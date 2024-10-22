@@ -34,7 +34,6 @@ Should add a check that indicates if the given Phi and Psi results in standardiz
   num.ord.max = 7,
   burn.in = 1000,
   max.tries = 100,
-  verbose = TRUE,
   fixed_params = TRUE
 )}\if{html}{\out{</div>}}
 }
@@ -84,7 +83,8 @@ Should add a check that indicates if the given Phi and Psi results in standardiz
 \if{html}{\out{<div class="r">}}\preformatted{simulateVAR$generate_ts_from_model(
   time_len = 100,
   num.ord.out = NULL,
-  initialize = FALSE
+  initialize = FALSE,
+  verbose = TRUE
 )}\if{html}{\out{</div>}}
 }
 
