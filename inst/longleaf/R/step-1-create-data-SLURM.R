@@ -22,6 +22,7 @@ num_mc_samples  <- 500
 # Define required locations for simulations
 slurm_out       <- paste0(args$sim_dir, "/slurm/step-1")
 models_dir      <- paste0(args$sim_dir, "/models")
+logs_dir        <- paste0(args$sim_dir, "/logs/step-1")
 
 # Overall string header 
 SLURM_header <- "#!/bin/bash
@@ -31,6 +32,11 @@ SLURM_header <- "#!/bin/bash
 #SBATCH -n 4
 #SBATCH -t 3-00:00:00
 "
+
+# SLURM output file locations
+log.o <- paste0("#SBATCH --output=", logs_dir, "/slurm-step-1.stdout")
+log.e <- paste0("#SBATCH --error=", logs_dir, "/slurm-step-1.stderr")
+
 
 # Specify conda environment 
 SLURM_conda <- "
@@ -59,7 +65,7 @@ cmd_string <- paste(cmd_string, "--num_indv_models", num_individuals, sep = " ")
 cmd_string <- paste(cmd_string, "--num_mc_samples", num_mc_samples, sep = " ")
 
 # Combine all parts together 
-SLURM_out <- paste(c(SLURM_header, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
+SLURM_out <- paste(c(SLURM_header, log.o, log.e, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
 
 # Create file 
 if (!file.exists(slurm_out)) {

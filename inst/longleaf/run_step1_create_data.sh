@@ -55,7 +55,7 @@ else
         --code_dir ${curr_dir}"/R" || exit 1
 
     # Submit jobs 
-    pushd ${out_loc_str}"/slurm" >> /dev/null 2>&1
+    pushd ${out_loc_str}"/slurm/step-1" >> /dev/null 2>&1
     sbatch "SLURM_create_data.slurm"
     popd >> /dev/null 2>&1
 
