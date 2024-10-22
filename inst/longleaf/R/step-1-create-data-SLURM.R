@@ -16,8 +16,8 @@ parser$add_argument('--code_dir', required = TRUE, help = "Location of code to r
 args <- parser$parse_args() 
 
 # Fix parameters
-num_individuals <- 100
-num_mc_samples  <- 500
+num_individuals <- 10  # For testing 
+num_mc_samples  <- 15  # For testing
 
 # Define required locations for simulations
 slurm_out       <- paste0(args$sim_dir, "/slurm/step-1")
@@ -32,10 +32,6 @@ SLURM_header <- "#!/bin/bash
 #SBATCH -n 4
 #SBATCH -t 3-00:00:00
 "
-
-# SLURM output file locations
-log.o <- paste0("#SBATCH --output=", logs_dir, "/slurm-step-1.stdout")
-log.e <- paste0("#SBATCH --error=", logs_dir, "/slurm-step-1.stderr")
 
 
 # Specify conda environment 
@@ -57,20 +53,35 @@ run_cmd <- paste("
 # Command to run 
 Rscript", code_to_run, sep = " ")
 
-# Update string 
-cmd_string <- run_cmd 
-cmd_string <- paste(cmd_string, "--models_json_file", args$models_json_file, sep = " ")
-cmd_string <- paste(cmd_string, "--models_out_loc", models_dir, sep = " ")
-cmd_string <- paste(cmd_string, "--num_indv_models", num_individuals, sep = " ")
-cmd_string <- paste(cmd_string, "--num_mc_samples", num_mc_samples, sep = " ")
 
-# Combine all parts together 
-SLURM_out <- paste(c(SLURM_header, log.o, log.e, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
+# Loop through models here!
+model_json_list         <- fromJSON(file = args$models_json_file)
+for (mod_i in 1:length(model_json_list$models)) {
 
-# Create file 
-if (!file.exists(slurm_out)) {
-    dir.create(slurm_out, recursive = TRUE)
+    # Model name
+    mod_i_name <- args$models_json_file$models[mod_i]
+
+    # SLURM output file locations
+    log.o <- paste0("#SBATCH --output=", logs_dir, "/slurm-step-1-", mod_i_name, ".stdout")
+    log.e <- paste0("#SBATCH --error=", logs_dir, "/slurm-step-1-", mod_i_name, ".stderr")
+
+    # Update string 
+    cmd_string <- run_cmd 
+    cmd_string <- paste(cmd_string, "--skeleton_name", mod_i_name, sep = " ")
+    cmd_string <- paste(cmd_string, "--skeleton_seed", args$models_json_file$seeds[mod_i], sep = " ")
+    cmd_string <- paste(cmd_string, "--models_out_loc", models_dir, sep = " ")
+    cmd_string <- paste(cmd_string, "--num_indv_models", num_individuals, sep = " ")
+    cmd_string <- paste(cmd_string, "--num_mc_samples", num_mc_samples, sep = " ")
+
+    # Combine all parts together 
+    SLURM_out <- paste(c(SLURM_header, log.o, log.e, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
+
+    # Create file 
+    if (!file.exists(slurm_out)) {
+        dir.create(slurm_out, recursive = TRUE)
+    }
+    file_conn <- file(paste0(slurm_out, "/SLURM_create_data_", mod_i_name, ".slurm"))
+    writeLines(SLURM_out, file_conn)
+    close(file_conn)
+
 }
-file_conn <- file(paste0(slurm_out, "/SLURM_create_data.slurm"))
-writeLines(SLURM_out, file_conn)
-close(file_conn)
