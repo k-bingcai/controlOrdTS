@@ -17,11 +17,13 @@ parser$add_argument('--ord_as_cont', action = 'store_true', help = "Indicator if
 args <- parser$parse_args()
 
 # Read in the data corresponding to the arguments
-RDS_filename_stem <- paste0("TS_list_", args$model_num, "_", args$ord_num)
+model_string 	  <- paste("model", args$model_num, sep = "_")
+RDS_filename_stem <- paste0("TS_list_", model_string, "_ord", args$ord_num)
 RDS_filename_full <- paste0(RDS_filename_stem, ".RDS")
 model_loc <- paste(args$sim_folder,
                    args$skeleton, 
-                   args$model_num, sep = "/")
+                   model_string,
+		   sep = "/")
 data_file <- paste(model_loc,
                    "data",
                    RDS_filename_full, sep = "/")
