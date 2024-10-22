@@ -32,7 +32,7 @@ max_timepts <- 1000
 # Convenience function to create folder if not exists 
 create_dir_not_exist <- function(dir_name) {
     if (!file.exists(dir_name)) {
-        dir.create(dir_name)
+        dir.create(dir_name, recursive = TRUE)
     }
 }
 

@@ -1,0 +1,70 @@
+#!/bin/Rscript
+
+# Creates a single SLURM file to generate the models 
+
+# Load libraries 
+library(argparse)
+library(rjson)
+
+# Read in arguments from CLI
+parser <- ArgumentParser(description = "Step 1: Create simulation objects")
+parser$add_argument('--models_json_file', required = TRUE, help = "JSON file containing simulation conditions")
+parser$add_argument('--sim_dir', required = TRUE, help = "Location simulations")
+parser$add_argument('--code_dir', required = TRUE, help = "Location of code to run simulations")
+
+# Parse arguments 
+args <- parser$parse_args() 
+
+# Fix parameters
+num_individuals <- 100
+num_mc_samples  <- 500
+
+# Define required locations for simulations
+slurm_out       <- paste0(args$sim_dir, "/slurm/step-1")
+models_dir      <- paste0(args$sim_dir, "/models")
+
+# Overall string header 
+SLURM_header <- "#!/bin/bash
+#SBATCH -p general
+#SBATCH -N 1
+#SBATCH --mem=20g
+#SBATCH -n 4
+#SBATCH -t 3-00:00:00
+"
+
+# Specify conda environment 
+SLURM_conda <- "
+# Activate conda environment
+source ~/.bashrc
+conda activate controlOrdTS
+"
+
+# Overall string end
+SLURM_end <- "
+# Deactivate conda environment 
+conda deactivate
+"
+
+# General command to use 
+code_to_run <- paste(args$code_dir, "step-1-create-data.R", sep = "/")
+run_cmd <- paste("
+# Command to run 
+Rscript", code_to_run, sep = " ")
+
+# Update string 
+cmd_string <- run_cmd 
+cmd_string <- paste(cmd_string, "--models_json_file", args$models_json_file, sep = " ")
+cmd_string <- paste(cmd_string, "--models_out_loc", models_dir, sep = " ")
+cmd_string <- paste(cmd_string, "--num_indv_models", num_individuals, sep = " ")
+cmd_string <- paste(cmd_string, "--num_mc_samples", num_mc_samples, sep = " ")
+
+# Combine all parts together 
+SLURM_out <- paste(c(SLURM_header, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
+
+# Create file 
+if (!file.exists(slurm_out)) {
+    dir.create(slurm_out, recursive = TRUE)
+}
+file_conn <- file(paste0(slurm_out, "/SLURM_create_data.slurm"))
+writeLines(SLURM_out, file_conn)
+close(file_conn)
