@@ -27,7 +27,7 @@ num_random <- as.integer(args$num_indv_models)
 num_mc_samples <- as.integer(args$num_mc_samples)
 
 # Maximum number of timepoints 
-max_timepts <- 500
+max_timepts <- 1000
 
 # Convenience function to create folder if not exists 
 create_dir_not_exist <- function(dir_name) {

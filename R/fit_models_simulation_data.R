@@ -58,6 +58,8 @@ run_simulation_one_ts <- function(input_ts,
 #' @param save_dir location to save the fitted models 
 #' @param ord_as_cont force ordinal variables to be continuous
 #' @param estimator string indicating which estimator to use
+#' 
+#' @export
 run_simulation_multi_ts <- function(input_ts_list,
                                     save_dir = NULL,
                                     mc.cores = 4,
