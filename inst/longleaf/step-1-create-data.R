@@ -112,7 +112,7 @@ for (mod_i in 1:length(model_json_list$models)) {
     }
     
     # Add print statements for logging
-    cat(paste0("[INFO] Completed generation for model: ", mod_i))
+    cat(paste0("[INFO] Completed generation for model: ", mod_i_name))
     cat("\n")
 
 }

@@ -31,11 +31,13 @@ data_file <- paste(model_loc,
 # Read in data 
 data_list <- readRDS(data_file)
 
-# Fit the models 
+# Fit the models
+cat(paste0("[INFO] Reading data from ", model_loc, "\n")) 
+cat(paste0("[INFO] Commencing fit for ", RDS_filename_stem, "\n"))
 lav_fit_all <- controlOrdTS::run_simulation_multi_ts(data_list,
                                                      ord_as_cont = args$ord_as_cont,
                                                      mc.cores = 5)
-
+cat(paste0("[INFO] Finished fit for ", RDS_filename_stem, "\n"))
 
 # Convenience function to create folder if not exists 
 create_dir_not_exist <- function(dir_name) {
@@ -56,7 +58,7 @@ save_RDS_if_not_exist <- function(file_name, obj_to_save) {
 
 # Create folders and save output 
 save_loc    <- paste(model_loc, "fitted", sep = "/")
-save_file   <- paste(RDS_filename_stem, "_fitted.RDS")
+save_file   <- paste0(RDS_filename_stem, "_fitted.RDS")
 create_dir_not_exist(save_loc)
-save_RDS_if_not_exist(paste(save_loc, save_file, sep = "/"))
+save_RDS_if_not_exist(paste(save_loc, save_file, sep = "/"), lav_fit_all)
 
