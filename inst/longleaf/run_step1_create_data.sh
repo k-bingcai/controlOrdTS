@@ -56,7 +56,10 @@ else
 
     # Submit jobs 
     pushd ${out_loc_str}"/slurm/step-1" >> /dev/null 2>&1
-    sbatch "SLURM_create_data.slurm"
+    for FILE in SLURM_create_data_*.slurm
+    do
+	    sbatch ${FILE}
+    done
     popd >> /dev/null 2>&1
 
 fi 
