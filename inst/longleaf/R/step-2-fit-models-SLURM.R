@@ -4,6 +4,7 @@
 
 # Load libraries 
 library(argparse)
+library(rjson)
 
 # Read in arguments from CLI
 parser <- ArgumentParser(description = "Step 2: Create SLURM files fitting VARs in lavaan")
@@ -79,9 +80,9 @@ for (cond_i in 1:nrow(conditions_df)) {
     # Update string 
     cmd_string <- run_cmd 
     cmd_string <- paste(cmd_string, "--sim_folder", args$sim_dir, sep = " ")
-    cmd_string <- paste(cmd_string, "--skeleton", this_row_skeleton, sep = " ")
-    cmd_string <- paste(cmd_string, "--model_num", this_row_model_num, sep = " ")
-    cmd_string <- paste(cmd_string, "--ord_num", this_row_ord_num, sep = " ")
+    cmd_string <- paste(cmd_string, "--skeleton", this_row$skeleton, sep = " ")
+    cmd_string <- paste(cmd_string, "--model_num", this_row$model_num, sep = " ")
+    cmd_string <- paste(cmd_string, "--ord_num", this_row$ord_num, sep = " ")
 
     # Combine all parts together 
     SLURM_out <- paste(c(SLURM_header, log.o, log.e, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
