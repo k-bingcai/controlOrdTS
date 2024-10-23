@@ -8,7 +8,8 @@ library(rjson)
 
 # Read in arguments from CLI
 parser <- ArgumentParser(description = "Step 1: Create simulation objects")
-parser$add_argument('--models_json_file', required = TRUE, help = "JSON file containing simulation conditions")
+parser$add_argument('--models_json_file', required = TRUE, help = "JSON file containing model information")
+parser$add_argument('--gen_json_file', required = TRUE, help = "JSON file containing generation parameters")
 parser$add_argument('--sim_dir', required = TRUE, help = "Location simulations")
 parser$add_argument('--code_dir', required = TRUE, help = "Location of code to run simulations")
 
@@ -16,8 +17,9 @@ parser$add_argument('--code_dir', required = TRUE, help = "Location of code to r
 args <- parser$parse_args() 
 
 # Fix parameters
-num_individuals <- 10  # For testing 
-num_mc_samples  <- 15  # For testing
+gen_json <- fromJSON(file = args$gen_json_file)
+num_individuals <- gen_json$num_individuals  
+num_mc_samples  <- gen_json$num_mc_samples  
 
 # Define required locations for simulations
 slurm_out       <- paste0(args$sim_dir, "/slurm/step-1")
