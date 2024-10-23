@@ -59,7 +59,7 @@ model_json_list         <- fromJSON(file = args$models_json_file)
 for (mod_i in 1:length(model_json_list$models)) {
 
     # Model name
-    mod_i_name <- args$models_json_file$models[mod_i]
+    mod_i_name <- model_json_list$models[mod_i]
 
     # SLURM output file locations
     log.o <- paste0("#SBATCH --output=", logs_dir, "/slurm-step-1-", mod_i_name, ".stdout")
@@ -68,7 +68,7 @@ for (mod_i in 1:length(model_json_list$models)) {
     # Update string 
     cmd_string <- run_cmd 
     cmd_string <- paste(cmd_string, "--skeleton_name", mod_i_name, sep = " ")
-    cmd_string <- paste(cmd_string, "--skeleton_seed", args$models_json_file$seeds[mod_i], sep = " ")
+    cmd_string <- paste(cmd_string, "--skeleton_seed", model_json_list$seeds[mod_i], sep = " ")
     cmd_string <- paste(cmd_string, "--models_out_loc", models_dir, sep = " ")
     cmd_string <- paste(cmd_string, "--num_indv_models", num_individuals, sep = " ")
     cmd_string <- paste(cmd_string, "--num_mc_samples", num_mc_samples, sep = " ")
