@@ -52,7 +52,7 @@ else
 
     # Create SLURM file 
     Rscript R/step-1-create-data-SLURM.R --models_json_file ${mod_file} \
-	--gen_json_file ${gen_file} \
+	      --gen_json_file ${gen_file} \
         --sim_dir ${out_loc_str} \
         --code_dir ${curr_dir}"/R" || exit 1
 

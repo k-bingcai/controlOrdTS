@@ -3,6 +3,8 @@
 #' We need a function here that will extract the info from a list of (list of) fits
 #' Outer list is for MC iterations
 #' Inner list is for truncated timepoints
+#' 
+#' @export
 extract_mc_results <- function(mc_fitted_list, true_Phi, true_Psi) {
 
     # Outer lapply over MC iterations
