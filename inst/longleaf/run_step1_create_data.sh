@@ -33,7 +33,8 @@ fi
 conda activate controlOrdTS || exit 1
 
 # Define JSON file to use
-cond_file=${curr_dir}"/configs/models.json"
+mod_file=${curr_dir}"/configs/models.json"
+gen_file=${curr_dir}"/configs/generation.json"
 
 
 # Toggle between local testing and actual cluster usage
@@ -50,7 +51,8 @@ else
     mkdir -p ${out_loc_str}
 
     # Create SLURM file 
-    Rscript R/step-1-create-data-SLURM.R --models_json_file ${cond_file} \
+    Rscript R/step-1-create-data-SLURM.R --models_json_file ${mod_file} \
+	--gen_json_file ${gen_file} \
         --sim_dir ${out_loc_str} \
         --code_dir ${curr_dir}"/R" || exit 1
 

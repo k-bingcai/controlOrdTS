@@ -43,11 +43,14 @@ gen_file=${curr_dir}"/configs/generation.json"
 # Output location
 out_loc_str=${SIM_DIRECTORY}"/"${filename} 
 
-# Clean out slurm folder 
-pushd ${out_loc_str}"/slurm/step-2" >> /dev/null 2>&1
-mkdir -p archive
-find . -maxdepth 1 -type f -print0 | xargs -0 mv -t archive
-popd >> /dev/null 2>&1
+# Clean out slurm folder
+if [ -d ${out_loc_str}"/slurm/step-2" ]
+then 
+	pushd ${out_loc_str}"/slurm/step-2" >> /dev/null 2>&1
+	mkdir -p archive
+	find . -maxdepth 1 -type f -print0 | xargs -0 mv -t archive
+	popd >> /dev/null 2>&1
+fi
 
 # Create SLURM file 
 Rscript R/step-2-fit-models-SLURM.R --models_json_file ${mod_file} \
