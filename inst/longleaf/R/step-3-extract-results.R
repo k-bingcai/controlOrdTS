@@ -20,9 +20,10 @@ model_string 	  <- paste("model", args$model_num, sep = "_")
 RDS_filename_stem <- paste0("TS_list_", model_string, "_ord", args$ord_num)
 RDS_filename_full <- paste0(RDS_filename_stem, "_fitted.RDS")
 model_loc <- paste(args$sim_folder,
+		           "models",
                    args$skeleton, 
                    model_string,
-		   sep = "/")
+		           sep = "/")
 fitted_file <- paste(model_loc,
                      "fitted",
                      RDS_filename_full, sep = "/")
