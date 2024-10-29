@@ -60,7 +60,7 @@ Rscript R/step-3-extract-results-SLURM.R --models_json_file ${mod_file} \
 
 # Submit jobs 
 pushd ${out_loc_str}"/slurm/step-3" >> /dev/null 2>&1
-for FILE in SLURM_fit_models_*.slurm
+for FILE in SLURM_extract_results_*.slurm
 do
     sbatch ${FILE}
 done
