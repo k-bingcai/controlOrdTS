@@ -32,7 +32,8 @@ fitted_file <- paste(model_loc,
 true_mod_name <- paste0("simobj_", model_string, ".RDS")
 true_mod_file <- paste(model_loc,
                        "simobj",
-                       true_mod_name)
+                       true_mod_name,
+                       sep = "/")
 
 # Read in the models
 cat(paste0("[INFO] Reading fitted model from ", model_loc, "\n")) 
