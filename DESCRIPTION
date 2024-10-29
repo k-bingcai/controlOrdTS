@@ -19,6 +19,7 @@ Imports:
     MASS,
     Matrix,
     mgcv,
+    netcontrol,
     qgraph,
     tidyr
 URL: https://github.com/k-bingcai/controlOrdTS
