@@ -33,7 +33,7 @@ done
 
 # Activate conda environment
 source ~/.bashrc || exit 1
-conda activate miivmed || exit 1
+conda activate controlOrdTS || exit 1
 
 
 # Define JSON file to use
