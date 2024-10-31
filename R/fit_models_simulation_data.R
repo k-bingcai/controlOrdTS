@@ -12,7 +12,8 @@
 run_simulation_one_ts <- function(input_ts,
                                   timepts_vec = c(50, 100, 200, 500, 1000),
                                   ord_as_cont = FALSE,
-                                  estimator = "DEFAULT") {
+                                  estimator = "DEFAULT",
+                                  save_fit = TRUE) {
 
     # Run checks
     max_timepts <- max(timepts_vec)
@@ -32,7 +33,8 @@ run_simulation_one_ts <- function(input_ts,
         lav_fit_outlist <- fit_lavaan_VAR(trunc_ts,
                                           force_reorder = TRUE,
                                           ord_as_cont = ord_as_cont,
-                                          estimator = estimator)
+                                          estimator = estimator,
+                                          save_fit = save_fit)
         lav_fit         <- lav_fit_outlist[["lavaan_fit"]]
 
         # Store parameters if fit succeeded
@@ -45,7 +47,8 @@ run_simulation_one_ts <- function(input_ts,
         }
         
         # Clear the truncated ts
-        trunc_ts <- NULL
+        trunc_ts        <- NULL
+        lav_fit_outlist <- NULL 
     }
 
     return(fit_list)
@@ -65,13 +68,15 @@ run_simulation_multi_ts <- function(input_ts_list,
                                     mc.cores = 4,
                                     timepts_vec = c(50, 100, 200, 500, 1000),
                                     ord_as_cont = FALSE,
-                                    estimator = "DEFAULT") {
+                                    estimator = "DEFAULT",
+                                    save_fit = TRUE) {
     
     # mclapply across iterations 
     mc_fit_list <- parallel::mclapply(input_ts_list, run_simulation_one_ts,
                                       timepts_vec = timepts_vec,
                                       ord_as_cont = ord_as_cont,
                                       estimator = estimator, 
+                                      save_fit = save_fit,
                                       mc.cores = mc.cores)
 
     # If save.dir is specified

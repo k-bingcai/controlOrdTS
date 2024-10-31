@@ -2,7 +2,8 @@
 fit_lavaan_VAR <- function(input_ts,
                            force_reorder = FALSE,
                            ord_as_cont = FALSE,
-                           estimator = "DEFAULT") {
+                           estimator = "DEFAULT",
+                           save_fit = TRUE) {
 
     # Lag order (set to 1)
     lavaan_lag_order  <- 1
@@ -155,9 +156,18 @@ fit_lavaan_VAR <- function(input_ts,
     one_cat_only_warning <- any(unlist(lapply(reorder_ts(lavaan_ts), function(y) length(unique(y)) == 1)))
 
     # Extract VAR params
-    est_Phi     <- extract_lavaan_Phi(lavaan_fit, num_vars)
-    est_Psi     <- extract_lavaan_Psi(lavaan_fit, num_vars)
-    VAR_est     <- list(Phi = est_Phi, Psi = est_Psi)
+    if (!is.null(lavaan_fit)) {
+      est_Phi     <- extract_lavaan_Phi(lavaan_fit, num_vars)
+      est_Psi     <- extract_lavaan_Psi(lavaan_fit, num_vars)
+      VAR_est     <- list(Phi = est_Phi, Psi = est_Psi)
+    } else {
+      VAR_est     <- NULL 
+    }
+
+    # Remove lavaan_fit from output if `save_fit == FALSE`
+    if (!save_fit) {
+      lavaan_fit <- "[INFO] Model fit not saved; `save_fit' == FALSE in fit_lavaan_VAR()."
+    }
 
     # Return output list
     return(list(lavaan_fit = lavaan_fit,

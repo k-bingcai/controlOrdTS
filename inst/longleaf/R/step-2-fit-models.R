@@ -37,6 +37,7 @@ cat(paste0("[INFO] Reading data from ", model_loc, "\n"))
 cat(paste0("[INFO] Commencing fit for ", RDS_filename_stem, "\n"))
 lav_fit_all <- controlOrdTS::run_simulation_multi_ts(data_list,
                                                      ord_as_cont = args$ord_as_cont,
+                                                     save_fit = FALSE,                  # Disables save of fitted model to save space
                                                      mc.cores = 5)
 cat(paste0("[INFO] Finished fit for ", RDS_filename_stem, "\n"))
 
