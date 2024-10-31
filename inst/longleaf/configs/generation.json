@@ -1,5 +1,5 @@
 {
-    "num_individuals": 10,
-    "num_mc_samples": 15,
+    "num_individuals": 100,
+    "num_mc_samples": 500,
     "num_ord": ["3", "5", "7", "inf"]
 }

@@ -44,7 +44,12 @@ do
     modnumbers=$(ls -l | grep ^d | awk '{print $9}')
     for m_num in ${modnumbers}
     do 
-        m_num_fitted=$(find ${m_num}"/fitted" -name "_fitted.RDS" | wc -l)
+	if [ -d "${m_num}/fitted" ] 
+	then 
+        	m_num_fitted=$(find ${m_num}"/fitted" -name "*_fitted.RDS" | wc -l)
+	else 
+		m_num_fitted=0
+	fi
         echo "${m_num} -> ${m_num_fitted} files"
     done 
     popd >> /dev/null 2>&1
