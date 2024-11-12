@@ -90,6 +90,9 @@ for (cond_i in 1:nrow(conditions_df)) {
     cmd_string <- paste(cmd_string, "--skeleton", this_row$skeleton, sep = " ")
     cmd_string <- paste(cmd_string, "--model_num", this_row$model_num, sep = " ")
     cmd_string <- paste(cmd_string, "--ord_num", this_row$ord_num, sep = " ")
+    if (args$ord_as_cont) {
+        cmd_string <- paste(cmd_string, "--ord_as_cont", sep = " ")
+    }
 
     # Combine all parts together 
     SLURM_out <- paste(c(SLURM_header, log.o, log.e, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
