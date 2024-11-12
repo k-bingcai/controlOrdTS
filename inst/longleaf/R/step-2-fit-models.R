@@ -58,9 +58,18 @@ save_RDS_if_not_exist <- function(file_name, obj_to_save) {
     }
 }
 
+
+# Save as diffrent file if ord_as_cont
+if (args$ord_as_cont) {
+    save_file_leaf <- "_fitted_ordascont.RDS"
+} else {
+    save_file_leaf <- "_fitted.RDS"
+}
+
+
 # Create folders and save output 
 save_loc    <- paste(model_loc, "fitted", sep = "/")
-save_file   <- paste0(RDS_filename_stem, "_fitted.RDS")
+save_file   <- paste0(RDS_filename_stem, save_file_leaf)
 create_dir_not_exist(save_loc)
 save_RDS_if_not_exist(paste(save_loc, save_file, sep = "/"), lav_fit_all)
 

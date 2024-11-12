@@ -12,6 +12,7 @@ parser$add_argument('--models_json_file', required = TRUE, help = "JSON file con
 parser$add_argument('--gen_json_file', required = TRUE, help = "JSON file containing generation parameters")
 parser$add_argument('--code_dir', required = TRUE, help = "Location of code directory")
 parser$add_argument('--sim_dir', required = TRUE, help = "Folder containing the simulation setup from Step 1.")
+parser$add_argument('--ord_as_cont', action = 'store_true', help = "Indicator if we should treat ordinal data as continuous") # Default is FALSE
 
 # Parse arguments 
 args <- parser$parse_args() 
@@ -27,7 +28,7 @@ SLURM_header <- "#!/bin/bash
 #SBATCH -N 1
 #SBATCH --mem=20g
 #SBATCH -n 5
-#SBATCH -t 05:00:00
+#SBATCH -t 30:00:00
 "
 
 
@@ -72,6 +73,12 @@ for (cond_i in 1:nrow(conditions_df)) {
     this_row_skeleton       <- paste0(this_row$skeleton)
     this_row_ord_num        <- paste0("ord", this_row$ord_num)
     this_row_name           <- paste(this_row_model_num, this_row_skeleton, this_row_ord_num, sep = "_")
+
+    # Name extension for ordascont
+    if (args$ord_as_cont) {
+        this_row_name <- paste(this_row_name, "ordascont", sep = "_")        
+    }
+
 
     # SLURM output file locations
     log.o <- paste0("#SBATCH --output=", logs_dir, "/slurm-step-2-", this_row_name, ".stdout")
