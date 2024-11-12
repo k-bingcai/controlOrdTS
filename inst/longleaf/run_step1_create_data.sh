@@ -16,6 +16,9 @@ while getopts ${OPTSTRING} opt; do
   esac
 done
 
+# Searches 'simulation_longleaf_paths.config'
+source configs/simulation_longleaf_paths.config
+
 # Script directory 
 curr_dir="$(dirname "$(readlink -f "$0")")"
 
@@ -47,7 +50,7 @@ then
 else
 
     # Set output location 
-    out_loc_str="/proj/gateslab/users/bingcai/projects/controlOrdTS-main/simulations/${timestamp}"
+    out_loc_str=${SIM_DIRECTORY}"/"${timestamp}
     mkdir -p ${out_loc_str}
 
     # Create SLURM file 
