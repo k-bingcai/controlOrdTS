@@ -60,6 +60,16 @@ compare_true_with_est <- function(lav_fitobj, true_Phi, true_Psi) {
 
     # Extract fitted parameters 
     est_params <- lav_fitobj$VAR_est   
+    
+    # Ignore estimates if error 
+    if (is.null(est_params)) {
+
+        if (!lav_fitobj$error_bool) {
+            stop("[ERROR] Estimated parameters is NULL but no error in lavaan fit.")
+        }
+
+        return(metrics_df)
+    }
 
     # Compute metrics of interest 
     VAR_metrics <- compute_VAR_metrics(true_params, est_params)

@@ -11,14 +11,23 @@ parser$add_argument('--sim_folder', required = TRUE, help = "Location of simulat
 parser$add_argument('--skeleton', required = TRUE, help = "Type of skeleton used to generate the data")
 parser$add_argument('--model_num', required = TRUE, help = "Model number to identify which folder to use")
 parser$add_argument('--ord_num', required = TRUE, help = "Number of ordinal categories to identify which generated data to use")
+parser$add_argument('--ord_as_cont', action = 'store_true', help = "Indicator if we should treat ordinal data as continuous") # Default is FALSE
+
 
 # Parse arguments 
 args <- parser$parse_args()
 
+# Save as diffrent file if ord_as_cont
+if (args$ord_as_cont) {
+    read_file_leaf <- "_fitted_ordascont.RDS"
+} else {
+    read_file_leaf <- "_fitted.RDS"
+}
+
 # Read in the data corresponding to the arguments
 model_string 	  <- paste("model", args$model_num, sep = "_")
 RDS_filename_stem <- paste0("TS_list_", model_string, "_ord", args$ord_num)
-RDS_filename_full <- paste0(RDS_filename_stem, "_fitted.RDS")
+RDS_filename_full <- paste0(RDS_filename_stem, read_file_leaf)
 model_loc <- paste(args$sim_folder,
 		           "models",
                    args$skeleton, 
@@ -62,10 +71,19 @@ save_RDS_if_not_exist <- function(file_name, obj_to_save) {
     }
 }
 
+
+# Save as diffrent file if ord_as_cont
+if (args$ord_as_cont) {
+    save_file_leaf <- "_results_ordascont.RDS"
+} else {
+    save_file_leaf <- "_results.RDS"
+}
+
+
 # Create folders and save output 
 cat(paste0("[INFO] Saving extracted results... \n")) 
 save_loc    <- paste(model_loc, "results", sep = "/")
-save_file   <- paste0(RDS_filename_stem, "_results.RDS")
+save_file   <- paste0(RDS_filename_stem, save_file_leaf)
 create_dir_not_exist(save_loc)
 save_RDS_if_not_exist(paste(save_loc, save_file, sep = "/"), out_list)
 
