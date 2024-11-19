@@ -12,6 +12,7 @@ parser$add_argument('--models_json_file', required = TRUE, help = "JSON file con
 parser$add_argument('--gen_json_file', required = TRUE, help = "JSON file containing generation parameters")
 parser$add_argument('--code_dir', required = TRUE, help = "Location of code directory")
 parser$add_argument('--sim_dir', required = TRUE, help = "Folder containing the simulation setup from Step 1.")
+parser$add_argument('--ord_as_cont', action = 'store_true', help = "Indicator if we should treat ordinal data as continuous") # Default is FALSE
 
 # Parse arguments 
 args <- parser$parse_args() 
@@ -73,6 +74,11 @@ for (cond_i in 1:nrow(conditions_df)) {
     this_row_ord_num        <- paste0("ord", this_row$ord_num)
     this_row_name           <- paste(this_row_model_num, this_row_skeleton, this_row_ord_num, sep = "_")
 
+    # Name extension for ordascont
+    if (args$ord_as_cont) {
+        this_row_name <- paste(this_row_name, "ordascont", sep = "_")        
+    }
+
     # SLURM output file locations
     log.o <- paste0("#SBATCH --output=", logs_dir, "/slurm-step-3-", this_row_name, ".stdout")
     log.e <- paste0("#SBATCH --error=", logs_dir, "/slurm-step-3-", this_row_name, ".stderr")
@@ -83,6 +89,9 @@ for (cond_i in 1:nrow(conditions_df)) {
     cmd_string <- paste(cmd_string, "--skeleton", this_row$skeleton, sep = " ")
     cmd_string <- paste(cmd_string, "--model_num", this_row$model_num, sep = " ")
     cmd_string <- paste(cmd_string, "--ord_num", this_row$ord_num, sep = " ")
+    if (args$ord_as_cont) {
+        cmd_string <- paste(cmd_string, "--ord_as_cont", sep = " ")
+    }
 
     # Combine all parts together 
     SLURM_out <- paste(c(SLURM_header, log.o, log.e, SLURM_conda, cmd_string, SLURM_end), sep = "\n\n")
