@@ -166,7 +166,7 @@ bringmann_2017_dataset2 <- function(abs_cst = 1e-2, eig_cst = 0.5, drop_index = 
   # N9: Irritated
   # N10: Stressed
   # Rows represent outputs, columns are inputs
-  m <- matrix(c("+", "0", "0", "0", "0", "0", "0", "0", "0", "+",
+  m <- matrix(c("+", "0", "0", "0", "0", "0", "0", "0", "+", "0",
                 "0", "+", "+", "+", "0", "0", "0", "0", "0", "0",
                 "0", "+", "+", "+", "+", "0", "0", "0", "0", "0",
                 "0", "+", "+", "+", "0", "0", "-", "0", "-", "0",
