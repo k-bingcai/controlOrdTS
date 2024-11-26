@@ -68,6 +68,11 @@ compare_true_with_est <- function(lav_fitobj, true_Phi, true_Psi) {
             stop("[ERROR] Estimated parameters is NULL but no error in lavaan fit.")
         }
 
+        # Extract warning and errors
+        metrics_df$warning_bool          <- lav_fitobj[["warning_bool"]]
+        metrics_df$error_bool            <- lav_fitobj[["error_bool"]]
+        metrics_df$one_cat_only          <- lav_fitobj[["one_cat_only"]]
+
         return(metrics_df)
     }
 
