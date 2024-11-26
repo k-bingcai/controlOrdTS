@@ -144,7 +144,7 @@ plot_diff <- function(column, data_to_plot) {
                        breaks = c(100, 250, 500, 1000)) +
     theme_bw() +
     theme(legend.position="none") +
-    ggtitle(data_to_plot$skeleton)
+    ggtitle(paste(data_to_plot$skeleton, "(", column, ")"))
 
 
 }
