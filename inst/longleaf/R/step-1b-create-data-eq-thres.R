@@ -75,7 +75,7 @@ for (mod_ij in existing_mods) {
                                    simobj, "/",
                                    "simobj_",
                                    mod_ij, 
-                                   ".RDS"), sep = "")
+                                   ".RDS", sep = ""))
 
     # Replace thresholds with fixed values 
     num_vars <- ncol(gen_ij_simobj$saved_params$raw.thres)
