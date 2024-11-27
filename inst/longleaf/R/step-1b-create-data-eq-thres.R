@@ -89,7 +89,7 @@ for (mod_ij in existing_mods) {
                                                             max_timepts = max_timepts)
 
     # Save locations
-    mod_ij_main_saveloc     <- paste0(mod_i_save_folder, "/model_", mod_ij)
+    mod_ij_main_saveloc     <- paste0(mod_i_save_folder, "/", mod_ij)
     mod_ij_simobj_saveloc   <- paste0(mod_ij_main_saveloc, "/simobj")
     mod_ij_data_saveloc     <- paste0(mod_ij_main_saveloc, "/data")
     create_dir_not_exist(mod_ij_main_saveloc)
@@ -98,13 +98,13 @@ for (mod_ij in existing_mods) {
 
     # Save the model 
     mod_ij_simobj_savename  <- paste0(mod_ij_simobj_saveloc,
-                                      "/simobj_model_", mod_ij, ".RDS") 
-    save_RDS_if_not_exist(mod_ij_simobj_savename, gen_ij_model)
+                                      "/simobj_", mod_ij, ".RDS") 
+    save_RDS_if_not_exist(mod_ij_simobj_savename, gen_ij_simobj)
 
     # Save the generated data 
     for (ts_k in names(gen_ij_ts)) {
         mod_ijk_TS_savename <- paste0(mod_ij_data_saveloc,
-                                        "/TS_list_model_", mod_ij, "_", ts_k, ".RDS")
+                                        "/TS_list_", mod_ij, "_", ts_k, ".RDS")
         save_RDS_if_not_exist(mod_ijk_TS_savename, gen_ij_ts[[ts_k]])
     }
 
