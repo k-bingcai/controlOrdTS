@@ -1,44 +1,44 @@
-#!/bin/bash
-
-# Get flags 
-LOCAL=0
-OPTSTRING=":l"
-while getopts ${OPTSTRING} opt; do
-  case ${opt} in
-    l)
-      # Trial value
-      LOCAL=1
-      ;;
-    ?)
-      echo "Invalid option: -${OPTARG}."
-      exit 1
-      ;;
-  esac
-done
-
 # Searches 'simulation_longleaf_paths.config'
-source configs/simulation_longleaf_paths.config
+source configs/simulation_longleaf_paths.config 
 
 # Script directory 
 curr_dir="$(dirname "$(readlink -f "$0")")"
 
-# Timestamp 
-timestamp=$(date +%Y%m%d_%H%M%S)
+# Extracts all available time stamps studies
+pushd ${SIM_DIRECTORY} >> /dev/null 2>&1
+simfiles=$(ls -l | grep ^d | awk '{print $9}')
+popd >> /dev/null 2>&1
+
+# Pulls up all available time stamps studies and prompts for response
+echo "The following names were found in the simulation folder; select one:"
+PS3="Use the numbers to select a file or 'stop' to cancel: "
+select filename in ${simfiles}
+do 
+    # leave the loop if the user says 'stop'
+    if [[ "$REPLY" == stop ]]; then break; fi
+
+    # complain if no file was selected, and loop to ask again
+    if [[ "$filename" == "" ]]
+    then
+        echo "'$REPLY' is not a valid number"
+        continue
+    fi
+
+    echo "${filename} selected."
+    break 
+done 
 
 # Activate conda environment
-if [ "${LOCAL}" -eq "1" ]
-then 
-  source /home/bing/anaconda3/etc/profile.d/conda.sh
-else 
-  source ~/.bashrc 
-fi
-
+source ~/.bashrc || exit 1
 conda activate controlOrdTS || exit 1
+
 
 # Define JSON file to use
 mod_file=${curr_dir}"/configs/models.json"
 gen_file=${curr_dir}"/configs/generation.json"
 
+# Output location
+out_loc_str=${SIM_DIRECTORY}"/"${filename} 
 
 # Toggle between local testing and actual cluster usage
 if [ "${LOCAL}" -eq "1" ]
@@ -49,13 +49,9 @@ then
 
 else
 
-    # Set output location 
-    out_loc_str=${SIM_DIRECTORY}"/"${timestamp}
-    mkdir -p ${out_loc_str}
-
     # Create SLURM file 
     Rscript R/step-1b-create-data-eq-thres-SLURM.R --models_json_file ${mod_file} \
-	    --gen_json_file ${gen_file} \
+	      --gen_json_file ${gen_file} \
         --sim_dir ${out_loc_str} \
         --code_dir ${curr_dir}"/R" || exit 1
 
