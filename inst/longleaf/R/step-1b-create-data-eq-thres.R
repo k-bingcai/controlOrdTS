@@ -72,7 +72,7 @@ for (mod_ij in existing_mods) {
     # Read original simobj 
     gen_ij_simobj <- readRDS(paste(mod_i_orig_folder, "/",
                                    mod_ij, "/",
-                                   simobj, "/",
+                                   "simobj", "/",
                                    "simobj_",
                                    mod_ij, 
                                    ".RDS", sep = ""))
