@@ -40,30 +40,20 @@ gen_file=${curr_dir}"/configs/generation.json"
 # Output location
 out_loc_str=${SIM_DIRECTORY}"/"${filename} 
 
-# Toggle between local testing and actual cluster usage
-if [ "${LOCAL}" -eq "1" ]
-then 
-   
-    echo "Error: script not configured for local testing"
-    exit 1
+# Create SLURM file 
+Rscript R/step-1b-create-data-eq-thres-SLURM.R --models_json_file ${mod_file} \
+    --gen_json_file ${gen_file} \
+    --sim_dir ${out_loc_str} \
+    --code_dir ${curr_dir}"/R" || exit 1
 
-else
+# Submit jobs 
+pushd ${out_loc_str}"/slurm/step-1b" >> /dev/null 2>&1
+for FILE in SLURM_create_data_eq_thres_*.slurm
+do
+  sbatch ${FILE}
+done
+popd >> /dev/null 2>&1
 
-    # Create SLURM file 
-    Rscript R/step-1b-create-data-eq-thres-SLURM.R --models_json_file ${mod_file} \
-	      --gen_json_file ${gen_file} \
-        --sim_dir ${out_loc_str} \
-        --code_dir ${curr_dir}"/R" || exit 1
-
-    # Submit jobs 
-    pushd ${out_loc_str}"/slurm/step-1b" >> /dev/null 2>&1
-    for FILE in SLURM_create_data_eq_thres_*.slurm
-    do
-	    sbatch ${FILE}
-    done
-    popd >> /dev/null 2>&1
-
-fi 
 
 # Deactivate conda environment
 conda deactivate || exit 1
