@@ -67,7 +67,7 @@ extract_sim_results <- function(sim_dir,
         tmp_res <- lapply(res_i_cls_RDS,
                           function(x) as.matrix(subset(x, select = -c(num_timepts))))
         tmp_res <- simplify2array(tmp_res)
-        avg_res <- apply(tmp_res, 1:2, mean)
+        avg_res <- apply(tmp_res, 1:2, mean, na.rm = TRUE)
         avg_res <- as.data.frame(avg_res)
 
         # Add back number of timepoints from row names
