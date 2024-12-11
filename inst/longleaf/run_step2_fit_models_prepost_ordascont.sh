@@ -37,11 +37,11 @@ conda activate controlOrdTS || exit 1
 
 
 # Define JSON file to use
-mod_file=${curr_dir}"/configs/models.json"
+mod_file=${curr_dir}"/configs/models_prepost.json"
 gen_file=${curr_dir}"/configs/generation.json"
 
 # String identifying which step-2 to run
-step_2_iden="standard-ordascont"
+step_2_iden="prepost-ordascont"
 
 # Output location
 out_loc_str=${SIM_DIRECTORY}"/"${filename} 

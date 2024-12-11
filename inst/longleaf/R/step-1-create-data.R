@@ -85,7 +85,8 @@ for (mod_ij in 1:num_random) {
 
     # Create model 
     gen_ij_model   <- controlOrdTS::create_sim_obj(phi.func = get(mod_i_func),
-                                                    phi.func.args = mod_i_arg_list)
+                                                   phi.func.args = mod_i_arg_list,
+                                                   obj_label = mod_i_name)
     gen_ij_ts      <- controlOrdTS::generate_TS_from_simobj(gen_ij_model, 
                                                             num_mc_samples = num_mc_samples, 
                                                             max_timepts = max_timepts)

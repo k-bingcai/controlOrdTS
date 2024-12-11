@@ -46,8 +46,12 @@ cat("\n")
 
 # Add print statements for logging
 mod_i_orig_name <- args$skeleton_name
-mod_i_eqthres_name <- paste(mod_i_orig_name, "_eq_thres", sep = "")
-cat(paste0("[INFO] Begin generation for model: ", mod_i_eqthres_name, "\n"))
+stopifnot(mod_i_orig_name %in% c("bringmann_2017_dataset2",
+                                 "bringmann_2017_dataset2_eq_thres")) # Only specify for this model for now
+
+# New name and logging
+mod_i_prepost_name <- paste(mod_i_orig_name, "_prepost_", sep = "")
+cat(paste0("[INFO] Begin generation for model: ", mod_i_prepost_name, "\n"))
 
 # Search for model folder 
 mod_i_orig_folder <- paste0(args$models_out_loc, "/", mod_i_orig_name)
@@ -56,18 +60,15 @@ if (!file.exists(mod_i_orig_folder)) {
 }
 
 # Create output folders 
-mod_i_save_folder <- paste0(args$models_out_loc, "/", mod_i_eqthres_name)
+mod_i_save_folder <- paste0(args$models_out_loc, "/", mod_i_prepost_name)
 create_dir_not_exist(mod_i_save_folder)
-
-# Fixed ordinal thresholds 
-fixed_ord_thres <- qnorm(seq(0.1,0.9,length.out = 6))
 
 # Loop through existing model folders
 existing_mods <- list.files(mod_i_orig_folder, pattern = "model_")
 for (mod_ij in existing_mods) {
 
     # Add print statements for logging
-    cat(paste0("[INFO] Generating for model: ", mod_i_eqthres_name, " ; mc iteration = ", mod_ij))
+    cat(paste0("[INFO] Generating for model: ", mod_i_prepost_name, " ; mc iteration = ", mod_ij))
 
     # Read original simobj 
     gen_ij_simobj <- readRDS(paste(mod_i_orig_folder, "/",
@@ -76,15 +77,22 @@ for (mod_ij in existing_mods) {
                                    "simobj_",
                                    mod_ij, 
                                    ".RDS", sep = ""))
-
-    # Replace thresholds with fixed values 
-    num_vars <- ncol(gen_ij_simobj$saved_params$raw.thres)
-    new_thres <- as.data.frame(t(matrix(rep(fixed_ord_thres, num_vars),
-                                        nrow = num_vars, byrow = TRUE)))
-    gen_ij_simobj$saved_params$raw.thres <- new_thres
+    
+    # Clone and replace 
+    # Delete the edges corresponding to these:
+    # a) Stressed <-> Anxious (8,10), (10,8)
+    # b) Stressed <-> Irritated (9,10), (10,9)
+    # c) Sad <-> Dysphoria (6,7), (7,6)
+    gen_ij_simobj_post <- gen_ij_simobj$clone(deep = TRUE)
+    gen_ij_simobj_post$saved_params$Phi[8,10]   <- 0 
+    gen_ij_simobj_post$saved_params$Phi[10,8]   <- 0 
+    gen_ij_simobj_post$saved_params$Phi[9,10]   <- 0 
+    gen_ij_simobj_post$saved_params$Phi[10,9]   <- 0 
+    gen_ij_simobj_post$saved_params$Phi[6,7]    <- 0 
+    gen_ij_simobj_post$saved_params$Phi[7,6]    <- 0 
 
     # Generate time series
-    gen_ij_ts      <- controlOrdTS::generate_TS_from_simobj(gen_ij_simobj, 
+    gen_ij_ts      <- controlOrdTS::generate_TS_from_simobj(gen_ij_simobj_post, 
                                                             num_mc_samples = num_mc_samples, 
                                                             max_timepts = max_timepts)
 
@@ -99,7 +107,7 @@ for (mod_ij in existing_mods) {
     # Save the model 
     mod_ij_simobj_savename  <- paste0(mod_ij_simobj_saveloc,
                                       "/simobj_", mod_ij, ".RDS") 
-    save_RDS_if_not_exist(mod_ij_simobj_savename, gen_ij_simobj)
+    save_RDS_if_not_exist(mod_ij_simobj_savename, gen_ij_simobj_post)
 
     # Save the generated data 
     for (ts_k in names(gen_ij_ts)) {
@@ -108,15 +116,13 @@ for (mod_ij in existing_mods) {
         save_RDS_if_not_exist(mod_ijk_TS_savename, gen_ij_ts[[ts_k]])
     }
 
-
 }
 
 # Add print statements for logging
-cat(paste0("[INFO] Completed generation for model: ", mod_i_eqthres_name))
+cat(paste0("[INFO] Completed generation for model: ", mod_i_prepost_name))
 cat("\n")
 
 
 # Add print statements for logging
 cat(paste0("[INFO] Completed model and data generation."))
 cat("\n")
-

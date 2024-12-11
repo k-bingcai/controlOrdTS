@@ -13,14 +13,15 @@ parser$add_argument('--gen_json_file', required = TRUE, help = "JSON file contai
 parser$add_argument('--code_dir', required = TRUE, help = "Location of code directory")
 parser$add_argument('--sim_dir', required = TRUE, help = "Folder containing the simulation setup from Step 1.")
 parser$add_argument('--ord_as_cont', action = 'store_true', help = "Indicator if we should treat ordinal data as continuous") # Default is FALSE
+parser$add_argument('--logs_suffix', required = TRUE, help = "Suffix to append to slurm and log folders")
 
 # Parse arguments 
 args <- parser$parse_args() 
 
 # Define required locations for simulations
-slurm_out       <- paste0(args$sim_dir, "/slurm/step-2")
+slurm_out       <- paste0(args$sim_dir, "/slurm/step-2-", args$logs_suffix)
 models_dir      <- paste0(args$sim_dir, "/models")
-logs_dir        <- paste0(args$sim_dir, "/logs/step-2")
+logs_dir        <- paste0(args$sim_dir, "/logs/step-2-", args$logs_suffix)
 
 # Overall string header 
 SLURM_header <- "#!/bin/bash

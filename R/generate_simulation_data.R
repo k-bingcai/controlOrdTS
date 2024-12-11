@@ -9,7 +9,8 @@
 #' @param num.ord.max
 #'
 #' @export
-create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7) {
+create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7,
+                           obj_label = NULL) {
 
     # Create random matrix with eigenvalues of norm < 1 (i.e. in the unit circle)
     phi_m <- do.call("phi.func", c(phi.func.args))
@@ -40,7 +41,7 @@ create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7) {
     sim_obj$initialize_models()
 
     # Set custom name and tags
-    sim_obj$set_custom_name(as.character(substitute(phi.func)))
+    sim_obj$set_custom_name(obj_label)
     sim_obj$set_custom_tags(list(phi.func.args = phi.func.args,
                                  num.ord.max = num.ord.max))
 
