@@ -37,7 +37,7 @@ conda activate controlOrdTS || exit 1
 
 
 # Define JSON file to use
-mod_file=${curr_dir}"/configs/models_prepost.json"
+mod_file=${curr_dir}"/configs/models_fit_prepost.json"
 gen_file=${curr_dir}"/configs/generation.json"
 
 # String identifying which step-2 to run

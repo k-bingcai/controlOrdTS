@@ -50,7 +50,7 @@ stopifnot(mod_i_orig_name %in% c("bringmann_2017_dataset2",
                                  "bringmann_2017_dataset2_eq_thres")) # Only specify for this model for now
 
 # New name and logging
-mod_i_prepost_name <- paste(mod_i_orig_name, "_prepost_", sep = "")
+mod_i_prepost_name <- paste(mod_i_orig_name, "_prepost", sep = "")
 cat(paste0("[INFO] Begin generation for model: ", mod_i_prepost_name, "\n"))
 
 # Search for model folder 
