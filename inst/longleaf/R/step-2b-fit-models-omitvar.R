@@ -44,7 +44,7 @@ data_list_omit_var_tmp  <- lapply(data_list,
 
 # Extract new column names
 identicalValue <- function(x,y) if (identical(x,y)) x else FALSE
-col_mapping <- Reduce(identicalValue, data_list_omit_var_tmp)
+col_mapping <- Reduce(identicalValue, lapply(data_list_omit_var_tmp, colnames))
 if (is.logical(col_mapping)) {
     if (col_mapping == FALSE) {
         stop("Columns are not identical in data list with omitted variables.")
