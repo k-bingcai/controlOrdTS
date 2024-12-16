@@ -85,10 +85,11 @@ save_RDS_if_not_exist <- function(file_name, obj_to_save) {
 }
 
 # Save as diffrent file if ord_as_cont
+omit_v_name <- paste0("omit_V", args$omit_var_num)
 if (args$ord_as_cont) {
-    save_file_leaf <- "_fitted_ordascont.RDS"
+    save_file_leaf <- paste0("_", omit_v_name, "_fitted_ordascont.RDS")
 } else {
-    save_file_leaf <- "_fitted.RDS"
+    save_file_leaf <- paste0("_", omit_v_name, "_fitted.RDS")
 }
 
 
