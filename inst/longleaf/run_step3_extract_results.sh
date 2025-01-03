@@ -40,13 +40,16 @@ conda activate controlOrdTS || exit 1
 mod_file=${curr_dir}"/configs/models.json"
 gen_file=${curr_dir}"/configs/generation.json"
 
+# String identifying which step-3 to run
+step_3_iden="standard"
+
 # Output location
 out_loc_str=${SIM_DIRECTORY}"/"${filename} 
 
 # Clean out slurm folder
-if [ -d ${out_loc_str}"/slurm/step-3" ]
+if [ -d ${out_loc_str}"/slurm/step-3-"${step_3_iden} ]
 then 
-	pushd ${out_loc_str}"/slurm/step-3" >> /dev/null 2>&1
+	pushd ${out_loc_str}"/slurm/step-3-"${step_3_iden} >> /dev/null 2>&1
 	mkdir -p archive
 	find . -maxdepth 1 -type f -print0 | xargs -0 mv -t archive
 	popd >> /dev/null 2>&1
@@ -56,10 +59,11 @@ fi
 Rscript R/step-3-extract-results-SLURM.R --models_json_file ${mod_file} \
     --gen_json_file ${gen_file} \
     --sim_dir ${out_loc_str} \
-    --code_dir ${curr_dir}"/R" || exit 1
+    --code_dir ${curr_dir}"/R" \
+    --logs_suffix ${step_3_iden} || exit 1
 
 # Submit jobs 
-pushd ${out_loc_str}"/slurm/step-3" >> /dev/null 2>&1
+pushd ${out_loc_str}"/slurm/step-3-"${step_3_iden} >> /dev/null 2>&1
 for FILE in SLURM_extract_results_*.slurm
 do
     sbatch ${FILE}

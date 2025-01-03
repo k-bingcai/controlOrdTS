@@ -35,16 +35,16 @@ done
 source ~/.bashrc || exit 1
 conda activate controlOrdTS || exit 1
 
-
 # Define JSON file to use
-mod_file=${curr_dir}"/configs/models.json"
+mod_file=${curr_dir}"/configs/models_extract_prepost.json"
 gen_file=${curr_dir}"/configs/generation.json"
 
 # String identifying which step-3 to run
-step_3_iden="ordascont"
+step_3_iden="prepost-ordascont"
 
 # Output location
 out_loc_str=${SIM_DIRECTORY}"/"${filename} 
+
 
 # Clean out slurm folder
 if [ -d ${out_loc_str}"/slurm/step-3-"${step_3_iden} ]
@@ -56,7 +56,7 @@ then
 fi
 
 # Create SLURM file 
-Rscript R/step-3-extract-results-SLURM.R --models_json_file ${mod_file} \
+Rscript R/step-3-extract-results-prepost-SLURM.R --models_json_file ${mod_file} \
     --gen_json_file ${gen_file} \
     --sim_dir ${out_loc_str} \
     --code_dir ${curr_dir}"/R" \

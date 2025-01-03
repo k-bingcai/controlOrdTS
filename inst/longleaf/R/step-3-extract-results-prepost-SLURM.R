@@ -48,7 +48,7 @@ conda deactivate
 "
 
 # General command to use 
-code_to_run <- paste(args$code_dir, "step-3-extract-results.R", sep = "/")
+code_to_run <- paste(args$code_dir, "step-3-extract-results-prepost.R", sep = "/")
 run_cmd <- paste("
 # Command to run 
 Rscript", code_to_run, sep = " ")
