@@ -72,8 +72,8 @@ compare_prepost <- function(pre_lav_fitobj, post_lav_fitobj,
     # Ignore estimates if error
     if (is.null(pre_est_params) || is.null(post_est_params)) {
 
-        if (!pre_lav_fitobj$error_bool || !post_lav_fitobj$error_bool) {
-        stop("[ERROR] Estimated parameters is NULL but no error in lavaan fit.")
+        if (!pre_lav_fitobj$error_bool && !post_lav_fitobj$error_bool) {    # This should be an && 
+            stop("[ERROR] Estimated parameters is NULL but no error in lavaan fit.")
         }
 
         # Extract warning and errors
