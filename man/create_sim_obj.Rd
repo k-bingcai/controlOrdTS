@@ -4,7 +4,12 @@
 \alias{create_sim_obj}
 \title{Creates simulation object based on simulation parameters}
 \usage{
-create_sim_obj(phi.func, phi.func.args = list(), num.ord.max = 7)
+create_sim_obj(
+  phi.func,
+  phi.func.args = list(),
+  num.ord.max = 7,
+  obj_label = NULL
+)
 }
 \arguments{
 \item{num.ord.max}{}

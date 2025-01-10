@@ -8,7 +8,8 @@ fit_lavaan_VAR(
   input_ts,
   force_reorder = FALSE,
   ord_as_cont = FALSE,
-  estimator = "DEFAULT"
+  estimator = "DEFAULT",
+  save_fit = TRUE
 )
 }
 \description{

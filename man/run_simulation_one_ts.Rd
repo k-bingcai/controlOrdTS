@@ -8,7 +8,8 @@ run_simulation_one_ts(
   input_ts,
   timepts_vec = c(50, 100, 200, 500, 1000),
   ord_as_cont = FALSE,
-  estimator = "DEFAULT"
+  estimator = "DEFAULT",
+  save_fit = TRUE
 )
 }
 \arguments{
