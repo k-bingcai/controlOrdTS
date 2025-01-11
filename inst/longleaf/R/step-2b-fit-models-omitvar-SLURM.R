@@ -30,7 +30,7 @@ SLURM_header <- "#!/bin/bash
 #SBATCH -N 1
 #SBATCH --mem=20g
 #SBATCH -n 5
-#SBATCH -t 30:00:00
+#SBATCH -t 40:00:00
 "
 
 
