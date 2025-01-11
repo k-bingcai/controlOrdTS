@@ -88,7 +88,10 @@ for (ov_id in omitted_var_id) {
     fitted_obj  <- readRDS(fitted_file)
 
     # Extract results 
-    out_list    <- controlOrdTS::extract_mc_results_omitvar(fitted_obj, tPhi, tPsi, ov_id)
+    fitted_lists_to_extract_from <- fitted_obj$fit_output
+    stopifnot(fitted_obj$omitted_var != paste0("V", ov_id))
+    out_list    <- controlOrdTS::extract_mc_results_omitvar(fitted_lists_to_extract_from,
+                                                            tPhi, tPsi, ov_id)
 
     # Create folders and save output 
     cat(paste0("[INFO] Saving extracted results for omission of V", ov_id, " ... \n")) 
