@@ -89,7 +89,7 @@ for (ov_id in omitted_var_id) {
 
     # Extract results 
     fitted_lists_to_extract_from <- fitted_obj$fit_output
-    stopifnot(fitted_obj$omitted_var != paste0("V", ov_id))
+    stopifnot(fitted_obj$omitted_var == paste0("V", ov_id))
     out_list    <- controlOrdTS::extract_mc_results_omitvar(fitted_lists_to_extract_from,
                                                             tPhi, tPsi, ov_id)
 
