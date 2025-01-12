@@ -28,44 +28,83 @@ bringmann_2_nonomit_out <- extract_sim_results(paste0(sim_folder, sim_date),
 # Subtract and form plot
 # Plot (for timepts = 1000) how metric tracks with gramian / centralit of omitted node
 
+gen_tbl_for_plotting <- function(raw_data, var_to_plot) {
+
+  # Extract relevant variables
+  mod_tbl <- raw_data %>%
+    select(ordascont, ord_cls, num_timepts, omit_var, mod_i, !!sym(var_to_plot)) %>%
+    mutate(omit_var = factor(omit_var, ordered = TRUE,
+                             levels = paste0("V", seq(1,10))))
+
+  # Group and average across models
+  avg_tbl <- mod_tbl %>%
+    group_by(ordascont, ord_cls, num_timepts, omit_var) %>%
+    summarize(metric_to_plot = mean(!!sym(var_to_plot)),
+              se_metric_to_plot = sd(!!sym(var_to_plot)) / sqrt(n()),
+              .groups = "drop")
+
+  # Collect outputs
+  out_list <- list(avg_tbl = avg_tbl,
+                   mod_tbl = mod_tbl,
+                   var_to_plot = var_to_plot)
+  return(out_list)
+}
+
 
 # We should merge, subtract, then average
-omitvar_tmp <- bringmann_2_omitvar_out$main %>%
-  select(ordascont, ord_cls, num_timepts, omit_var, mod_i, est_correct_max_node_omitvar)
+# omitvar_tmp <- bringmann_2_omitvar_out$main %>%
+#   select(ordascont, ord_cls, num_timepts, omit_var, mod_i, est_correct_max_node_omitvar)
 
-nonomit_tmp <- bringmann_2_nonomit_out$main %>%
-  select(ordascont, ord_cls, num_timepts, mod_i, est_correct_max_node)
-
-both_merge_tmp <- merge(omitvar_tmp, nonomit_tmp,
-                        by = c("ordascont", "ord_cls", "num_timepts", "mod_i")) %>%
-  mutate(diff_metric = est_correct_max_node_omitvar - est_correct_max_node)
+# DO NOT COMPARE AGAINST NON-OMITTED FOR NOW
+# IF WE WANT TO COMPARE CORRELATIONS FOR NON-OMITTED, WE NEED TO RECOMPUTE THE CORRELATION FOR THE SUBSET OF 9 VARIABLES
+# nonomit_tmp <- bringmann_2_nonomit_out$main %>%
+#   select(ordascont, ord_cls, num_timepts, mod_i, est_correct_max_node)
+#
+# both_merge_tmp <- merge(omitvar_tmp, nonomit_tmp,
+#                         by = c("ordascont", "ord_cls", "num_timepts", "mod_i")) %>%
+#   mutate(diff_metric = est_correct_max_node_omitvar - est_correct_max_node)
 
 # Average now across models
-mean_models_tmp <- both_merge_tmp %>%
-  group_by(ordascont, ord_cls, num_timepts, omit_var) %>%
-  summarize(mean_diff_metric = mean(diff_metric),
-            se_diff_metric = sd(diff_metric) / sqrt(n()),
-            .groups = "drop") %>%
-  # mutate(mean_diff_metric_pos = pmax(0, mean_diff_metric_pos)) %>%
-  # mutate(mean_diff_metric_neg = -1 * pmax(0, -1 * mean_diff_metric_pos))
-  mutate(omit_var = factor(omit_var, ordered = TRUE,
-                           levels = paste0("V", seq(1,10))))
+# mean_models_tmp <- both_merge_tmp %>%
+#   group_by(ordascont, ord_cls, num_timepts, omit_var) %>%
+#   summarize(mean_diff_metric = mean(diff_metric),
+#             se_diff_metric = sd(diff_metric) / sqrt(n()),
+#             .groups = "drop") %>%
+#   # mutate(mean_diff_metric_pos = pmax(0, mean_diff_metric_pos)) %>%
+#   # mutate(mean_diff_metric_neg = -1 * pmax(0, -1 * mean_diff_metric_pos))
+#   mutate(omit_var = factor(omit_var, ordered = TRUE,
+#                            levels = paste0("V", seq(1,10))))
 
 ## !!! WARNING: this is for ordascont == FALSE for now ##
 
 
-plot_radar <- function(data_to_plot, column_to_plot, ordascont_val = FALSE) {
+plot_radar <- function(avg_data_to_plot,
+                       mod_data_to_plot,
+                       avg_column_to_plot,
+                       mod_column_to_plot,
+                       ordascont_val = FALSE) {
 
   # Subset data
-  data_to_plot <- data_to_plot %>% filter(ordascont == ordascont_val)
+  avg_data_to_plot <- avg_data_to_plot %>% filter(ordascont == ordascont_val)
+  mod_data_to_plot <- mod_data_to_plot %>% filter(ordascont == ordascont_val)
 
   # Generate Plot
-  ggplot(data_to_plot, aes(x = omit_var)) +
-    geom_col(aes(y = !!sym(column_to_plot),
-                 fill = !!sym(column_to_plot))) +
+  ggplot(avg_data_to_plot, aes(x = omit_var)) +
+    geom_col(aes(y = !!sym(avg_column_to_plot),
+                 fill = !!sym(avg_column_to_plot))) +
+    # geom_point(data = mod_data_to_plot,
+    #            aes(y = !!sym(mod_column_to_plot)),
+    #            position = position_dodge(0.3, dodge.width = .8),
+    #            alpha = 0.8) +
     coord_polar() +
-    scale_fill_gradient2(low = "darkblue", high = "tomato3",
-                         limits = c(-1,1), name = "Metric") +
+    scale_fill_gradientn(
+      "Metric",
+      colours = c( "#6C5B7B","#C06C84","#F67280","#F8B195"),
+      limits= c(0,1)
+    ) +
+    # scale_fill_gradientn(colours = c("cyan", "black", "red"), # low = "darkblue", high = "tomato3",
+    #                      limits = c(-1,1), name = "Metric",
+    #                      values = scales::rescale(c(-0.5, -0.05, 0, 0.05, 0.5))) +
     # scale_x_discrete(labels = c("Angry",
     #                             "Excited",
     #                             "Happy",
@@ -77,7 +116,7 @@ plot_radar <- function(data_to_plot, column_to_plot, ordascont_val = FALSE) {
     #                             "Irritated",
     #                             "Stressed")) +
     scale_y_continuous(
-      limits = c(-1,0.5)
+      limits = c(-0.2,1)
     ) +
     theme_bw() +
     theme(
@@ -88,9 +127,9 @@ plot_radar <- function(data_to_plot, column_to_plot, ordascont_val = FALSE) {
       axis.text.x = element_text(color = "gray12", size = 4.5),
 
       text = element_text(color = "gray12", family = "Bell MT"),
-      plot.title = element_text(face = "bold", size = 25, hjust = 0.05),
-      plot.subtitle = element_text(size = 14, hjust = 0.05),
-      plot.caption = element_text(size = 10, hjust = .5),
+      plot.title = element_text(face = "bold", size = 10, hjust = 0.05),
+      plot.subtitle = element_text(size = 8, hjust = 0.05),
+      plot.caption = element_text(size = 8, hjust = .5),
 
       # Make the background white and remove extra grid lines
       # panel.background = element_blank(),
@@ -103,13 +142,40 @@ plot_radar <- function(data_to_plot, column_to_plot, ordascont_val = FALSE) {
 }
 
 
+# Wrapper function
+extract_and_plot <- function(raw_data, col_to_plot, ordascont_val = FALSE) {
+  ptable <- gen_tbl_for_plotting(raw_data,
+                                 col_to_plot)
+  plot_radar(ptable$avg_tbl,
+             ptable$mod_tbl,
+             "metric_to_plot",
+             col_to_plot,
+             ordascont_val = ordascont_val) +
+    ggtitle(paste(ptable$var_to_plot, "; ordascont = ", ordascont_val))
+}
 
 
-plot_radar(mean_models_tmp, "mean_diff_metric")
+# Plot
+extract_and_plot(bringmann_2_omitvar_out$main, "est_correct_max_node_omitvar")
+extract_and_plot(bringmann_2_omitvar_out$main, "est_correct_max_node_omitvar", TRUE)
+
+extract_and_plot(bringmann_2_omitvar_out$main, "est_max_in_top20p_nodes_omitvar")
+extract_and_plot(bringmann_2_omitvar_out$main, "est_max_in_top20p_nodes_omitvar", TRUE)
+
+extract_and_plot(bringmann_2_omitvar_out$main, "gramian_sp_rank_corr_omitvar")
+extract_and_plot(bringmann_2_omitvar_out$main, "gramian_sp_rank_corr_omitvar", TRUE)
 
 
-
-
+# Demo variability
+extract_and_plot(bringmann_2_omitvar_out$main %>%
+                  filter(ordascont == FALSE & mod_i == "model_13" & ord_cls == "ord5" & num_timepts == 1000),
+                 "est_correct_max_node_omitvar")
+extract_and_plot(bringmann_2_omitvar_out$main %>%
+                   filter(ordascont == FALSE & mod_i == "model_1" & ord_cls == "ord5" & num_timepts == 1000),
+                 "est_correct_max_node_omitvar")
+extract_and_plot(bringmann_2_omitvar_out$main %>%
+                   filter(ordascont == FALSE & mod_i == "model_89" & ord_cls == "ord5" & num_timepts == 1000),
+                 "est_correct_max_node_omitvar")
 
 # # Average across models
 # omit_var_mean_models <- bringmann_2_omitvar_out$main %>%
