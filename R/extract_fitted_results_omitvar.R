@@ -137,8 +137,13 @@ compute_VAR_metrics_omitvar <- function(true_params, est_params, omitted_var_ind
                                      na.action = "na.exclude")$estimate
 
     # Most important control node (from true gramian)
-    true_max_nodes        <- which(true_diag_gramian == max(true_diag_gramian))
-    true_top20p_nodes     <- which(true_diag_gramian %in% sort(true_diag_gramian, decreasing = TRUE)[1:round(length(true_diag_gramian)/ 5)])
+    tmp_true_diag_gramian_w_NA                      <- true_diag_gramian
+    tmp_true_diag_gramian_w_NA[omitted_var_index]   <- NA
+    true_max_nodes        <- which(tmp_true_diag_gramian_w_NA == max(tmp_true_diag_gramian_w_NA, na.rm = TRUE))
+    top20p_nodes_vec      <- sort(tmp_true_diag_gramian_w_NA,
+                                  decreasing = TRUE,
+                                  na.last = TRUE)[1:round(length(tmp_true_diag_gramian_w_NA)/ 5)]
+    true_top20p_nodes     <- which(true_diag_gramian %in% top20p_nodes_vec)
 
     # Most important control node (estimated)
     est_max_nodes           <- which(est_diag_gramian == max(est_diag_gramian, na.rm = TRUE))
