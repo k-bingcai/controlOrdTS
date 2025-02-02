@@ -11,16 +11,19 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
 Imports: 
+    boot,
     data.table,
     dplyr,
     ggplot2,
     igraph,
+    latex2exp,
     lavaan,
     MASS,
     Matrix,
     mgcv,
     netcontrol,
     qgraph,
+    stringr,
     tidyr
 URL: https://github.com/k-bingcai/controlOrdTS
 BugReports: https://github.com/k-bingcai/controlOrdTS/issues

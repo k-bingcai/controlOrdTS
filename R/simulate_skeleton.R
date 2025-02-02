@@ -371,14 +371,72 @@ simulate_gramian <- function(m_func,
 }
 
 
+
+#' Runs and plots simulation from across different scale_free structures 
+#' 
+#' @export 
+sim_multiple_scale_free <- function(num_iter = 1000,
+                                    num_seeds = 100) {
+
+  # Create dataframe to store values 
+  total_rows <- 3 * num_seeds
+  all_results <- data.frame(c_type = rep(NA_character_, total_rows),
+                            seed_val = rep(NA_integer_, total_rows),
+                            prop_max_node_agree = rep(NA_real_, total_rows))
+
+  # Index for results
+  res_index <- 1
+
+  ## Insert for loop here 
+  for (seed_k in 1:num_seeds) {
+
+    # Start at 3500 and increase by 100 each time
+    cat(paste("Simulating for seed: ", seed_k, "\n"))
+    seed_to_use <- 3500 + (seed_k - 1) * 100
+
+    ## Loop through centrality type here 
+    for (c_type in c("degree", "betweenness", "closeness")) {
+
+      # Run simulation 
+      sim_results <- simulate_gramian(m_func = scale_free_seeded,
+                                      c_func = adj_m_to_centrality,
+                                      m_func_args = list(abs_cst = 2, prop_zero = 0.7, seed = seed_to_use),
+                                      c_func_args = list(type = c_type),
+                                      num_iter = num_iter,
+                                      out_type = "max_node")
+      
+      # Check how many max nodes agree 
+      max_node_agree <- lapply(sim_results,
+                              function(x) {tail(rank_nodes_centrality(x[["centrality_out"]])$node_order,1) == x[["gramian_out"]]} )
+      prop_max_node_agree <- sum(unlist(max_node_agree)) / length(max_node_agree)
+
+      # Store results 
+      all_results[res_index, "c_type"]                <- c_type
+      all_results[res_index, "seed_val"]              <- seed_to_use 
+      all_results[res_index, "prop_max_node_agree"]   <- prop_max_node_agree
+
+      # Update index 
+      res_index <- res_index + 1
+
+    }
+
+  }
+
+  return(all_results)
+
+}
+
+
 #' Runs and plots the results from the simulation
 #'
+#' @export
 run_and_plot_simulation <- function(m_func,
                                     m_func_args = list(),
                                     num_iter = 1000,
                                     centrality_type = c("degree", "betweenness", "closeness"),
                                     metric_type = c("max_node", "dgramian"),
-                                    plot_type = c("boxplot", "histogram", "correlation")) {
+                                    plot_type = c("boxplot", "histogram", "correlation_raw", "correlation_summary"),
+                                    force_boxplot = FALSE) {
 
   # Read in default arguments if not given
   centrality_type <- match.arg(centrality_type)
@@ -395,9 +453,18 @@ run_and_plot_simulation <- function(m_func,
   # For different plots (WE MIGHT WANT TO SEPARATE THIS INTO ANOTHER SCRIPT)
   if (plot_type == "boxplot") {
 
-    # Only allow for degree + dgramian
-    stopifnot(centrality_type == "degree")
-    stopifnot(metric_type == "dgramian")
+    if (!force_boxplot) {
+
+      # Only allow for degree + dgramian
+      stopifnot(centrality_type == "degree")
+      stopifnot(metric_type == "dgramian")
+
+    } else {
+
+      # Print warning for forcing boxplot
+      warning(paste("Forcefully plotting boxplot for metric type", centrality_type))
+
+    }
 
     # Get unique degrees for the matrix
     uniq_degrees <- Reduce(function(x,y) {if (identical(x,y)) x else FALSE},
@@ -419,18 +486,28 @@ run_and_plot_simulation <- function(m_func,
       tidyr::pivot_longer(cols = everything(),
                           names_to = "node",
                           values_to = "dgramian")
+    results_df            <- results_df %>% dplyr::mutate(node_names = paste("V", node, sep = ""))
 
     # Results plot
     results_plot <- ggplot2::ggplot(results_df,
-                                    ggplot2::aes(x = factor(node, levels = nodes_info$node_order),
+                                    ggplot2::aes(x = factor(node_names,
+                                                            levels = paste("V", nodes_info$node_order, sep = "")),
                                                  y = dgramian)) +
       ggplot2::geom_boxplot(outliers = FALSE) +
       ggplot2::ylab("Gramian Value") +
-      ggplot2::ggtitle(paste("Distribution of Diagonal Gramian (", num_iter, " iterations)", sep = ""))
+      ggplot2::ggtitle(paste("Distribution of Diagonal Gramian")) # (", num_iter, " iterations)", sep = ""))
 
     # Common X label
     results_plot <- results_plot +
-      ggplot2::xlab(paste("Node Index ( -> increasing ", centrality_type, " )", sep = ""))
+      ggplot2::xlab(paste("Nodes ordered in increasing value of ", 
+                          stringr::str_to_title(centrality_type), sep = "")) + 
+      ggplot2::theme(axis.text.x = ggplot2::element_text(size = 8),
+                     axis.text.y = ggplot2::element_text(size = 8),
+                     axis.title.x = ggplot2::element_text(size = 10),
+                     axis.title.y = ggplot2::element_text(size = 10),
+                     title = ggplot2::element_text(size = 12)) 
+        
+        # paste(latex2exp::TeX("$Node Index ( \\rightarrow increasing $"), centrality_type, " )", sep = ""))
 
     # Add equivalent lines!
     results_plot <- results_plot +
@@ -458,27 +535,38 @@ run_and_plot_simulation <- function(m_func,
 
     # Maximal node results
     results_df <- data.frame(x = unlist(dgramian_only)) %>%
-      dplyr::mutate(x = factor(x, levels = nodes_info$node_order)) %>%
-      dplyr::count(x, .drop = FALSE)
+      dplyr::mutate(node_names = paste("V", x, sep = "")) %>%
+      dplyr::mutate(node_names = factor(node_names,
+                                        levels = paste("V", nodes_info$node_order, sep = ""))) %>%
+      dplyr::count(node_names, .drop = FALSE)
+    # results_df <- results_df %>% dplyr::mutate(node_names = paste("V", node, sep = ""))
+    # print(head(results_df))
+    
 
     # Plot object
     results_plot <- ggplot2::ggplot(results_df,
-                                    ggplot2::aes(x = x,
+                                    ggplot2::aes(x = node_names,
                                                  y = n)) +
       ggplot2::geom_bar(stat = "identity", width = 0.5) +
       ggplot2::ylab("Counts") +
-      ggplot2::ggtitle(paste("Distribution of Maximal Node (", num_iter, " iterations)", sep = ""))
+      ggplot2::ggtitle(paste("Distribution of Maximal Node")) # (", num_iter, " iterations)", sep = "")) + 
+      ggplot2::theme(axis.text.x = ggplot2::element_text(size = 8),
+                axis.text.y = ggplot2::element_text(size = 8),
+                axis.title.x = ggplot2::element_text(size = 10),
+                axis.title.y = ggplot2::element_text(size = 10),
+                title = ggplot2::element_text(size = 12)) 
 
     # Common X label
     results_plot <- results_plot +
-      ggplot2::xlab(paste("Node Index ( -> increasing ", centrality_type, " )", sep = ""))
+       ggplot2::xlab(paste("Nodes ordered in increasing value of ", 
+                          stringr::str_to_title(centrality_type), sep = "")) 
 
     # Add equivalent lines!
     results_plot <- results_plot +
       ggplot2::geom_vline(xintercept = which(nodes_info$node_breaks) + 0.5,
                           color = "red", lty = 2)
 
-  } else if (plot_type == "correlation") {
+  } else if (plot_type %in% c("correlation_raw", "correlation_summary")) {
 
     # Do not allow 'degree' or 'max_node'
     if (centrality_type == "degree") {
@@ -487,6 +575,7 @@ run_and_plot_simulation <- function(m_func,
     if (metric_type == "max_node") {
       stop("[ERROR] Correlations are not supported for 'max_node'. Maximal node is not defined for all nodes. ")
     }
+    stopifnot(metric_type == "dgramian")
 
     # Extract results separately
     dgramian_only         <- lapply(sim_results, function(x) {x[["gramian_out"]]})
@@ -500,6 +589,18 @@ run_and_plot_simulation <- function(m_func,
     stopifnot(ncol(dgramian_mat) == ncol(centrality_mat))
     num_nodes   <- ncol(dgramian_mat)
     node_all_df <- NULL
+    corr_all_df <- data.frame(corr_val = rep(NA_real_, num_nodes),
+                              corr_ci_lower = rep(NA_real_, num_nodes),
+                              corr_ci_upper = rep(NA_real_, num_nodes),
+                              node_label = rep(NA_character_, num_nodes))
+    # Function to get bootstrapped CIs for spearman correlation
+    spearman_corr <- function(data, indices) {
+      d <- data[indices, ]  # Resample data
+      suppressWarnings({
+        output <- cor(d[,1], d[,2], method = "spearman")
+      })
+      return(output)  # Compute Spearman's correlation
+    }
     for (node_i in 1:num_nodes) {
 
       # Create dataframe for ggplot2
@@ -507,16 +608,88 @@ run_and_plot_simulation <- function(m_func,
                               dgramian = dgramian_mat[,node_i],
                               node = as.character(node_i))
 
+      # print warning
+      if (length(unique(node_i_df$centrality)) == 1) {
+        warning(paste("Number of unqiue values in centrality is 1."))
+      }
+
+      # Create dataframe for correlations 
+      suppressWarnings({
+        node_i_cor <- cor(node_i_df$centrality,
+                          node_i_df$dgramian,
+                          method = "spearman")
+      })
+      node_i_boot_res <- boot::boot(node_i_df[,c("centrality", "dgramian")],
+                                    statistic = spearman_corr, R = 1000)
+      node_i_boot_ci  <- tryCatch({
+        boot::boot.ci(node_i_boot_res, type = "perc")
+      }, error = function(e) {
+        NA
+      }, warning = function(e) {
+        NA
+      })
+      if (!identical(node_i_boot_ci, NA)) {
+        boot_ci_lims <- node_i_boot_ci$percent[c(4,5)]
+      } else {
+        boot_ci_lims <- c(NA, NA)
+        warning(paste("Cannot bootstrap CIs for node", node_i))
+      }
+      corr_all_df[node_i,] <- c(node_i_cor,
+                                boot_ci_lims,
+                                paste("V",  as.character(node_i), sep = ""))
+      
+      # print(node_i_df)
+      # print(cor(node_i_df$centrality, node_i_df$dgramian, method = "spearman"))
+
       # Combine with existing dataframe
       node_all_df <- rbind(node_all_df, node_i_df)
 
     }
 
-    # Apply facet_wrap scatter plot
-    results_plot <- ggplot2::ggplot(node_all_df,
-                                    ggplot2::aes(x = centrality, y = dgramian)) +
+    # print("DEBUGGING")
+    # return(corr_all_df)
+    if (plot_type == "correlation_raw") {
+
+
+      node_all_df <- node_all_df %>%
+        dplyr::mutate(node_names = paste("V", node, sep = "")) %>%
+        dplyr::mutate(node_names = factor(node_names, levels = paste("V", seq(1,num_nodes), sep = "")))
+
+      # Apply facet_wrap scatter plot
+      results_plot <- ggplot2::ggplot(node_all_df,
+                                      ggplot2::aes(x = centrality, y = log(dgramian))) +
+        ggplot2::geom_point(alpha = 0.15) +
+        ggplot2::facet_wrap(~ node_names, ncol = num_nodes) + 
+        ggplot2::theme_bw() + 
+        ggplot2::scale_x_continuous(breaks = scales::pretty_breaks(n = 4)) + 
+        ggplot2::xlab(stringr::str_to_title(centrality_type)) + 
+        ggplot2::ylab("log(Gramian)") +
+        ggplot2::ggtitle(paste("Scatter Plot of Gramian Against ", stringr::str_to_title(centrality_type), sep = "")) + 
+        ggplot2::guides(x = guide_axis(angle=45)) 
+
+    } else if (plot_type == "correlation_summary") {
+
+      # Spearman plots
+      results_plot <- ggplot2::ggplot(corr_all_df,
+            ggplot2::aes(x = factor(node_label,
+                        levels = paste("V", seq(1,num_nodes), sep = "")),
+                        y = as.numeric(corr_val))) +
       ggplot2::geom_point() +
-      ggplot2::facet_wrap(~ node, ncol = num_nodes)
+      ggplot2::geom_errorbar(ggplot2::aes(ymin = as.numeric(corr_ci_lower),
+                                          ymax = as.numeric(corr_ci_upper)),
+                            linewidth = 0.3,
+                            width = 0.3) +
+      ggplot2::ylim(c(-1,1)) +
+      ggplot2::xlab("Node Index") +
+      ggplot2::ylab(latex2exp::TeX("Spearman's $\\rho$")) +
+      ggplot2::ggtitle(paste("Correlation Between Gramian and ",
+                            stringr::str_to_title(centrality_type), sep = "")) + 
+      ggplot2::theme_bw() + 
+      ggplot2::geom_hline(yintercept = 0, lty = 2, alpha = 0.3)
+
+    } else {
+      stop("Invalid correlation plot type.")
+    }
 
   }
 
