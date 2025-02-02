@@ -1,5 +1,6 @@
 # Load main library
 library(controlOrdTS)
+library(ggplot2)
 
 # Seed for replications
 set.seed(1000)
