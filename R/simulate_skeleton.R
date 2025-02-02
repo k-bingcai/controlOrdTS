@@ -665,7 +665,7 @@ run_and_plot_simulation <- function(m_func,
         ggplot2::xlab(stringr::str_to_title(centrality_type)) + 
         ggplot2::ylab("log(Gramian)") +
         ggplot2::ggtitle(paste("Scatter Plot of Gramian Against ", stringr::str_to_title(centrality_type), sep = "")) + 
-        ggplot2::guides(x = guide_axis(angle=45)) 
+        ggplot2::guides(x = ggplot2::guide_axis(angle=45)) 
 
     } else if (plot_type == "correlation_summary") {
 
