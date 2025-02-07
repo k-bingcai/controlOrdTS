@@ -18,10 +18,15 @@ bringmann_2_omitvar_out <- extract_sim_results(paste0(sim_folder, sim_date),
                                                skeleton = "bringmann_2017_dataset2",
                                                omitvar_only = TRUE)
 
-bringmann_2_nonomit_out <- extract_sim_results(paste0(sim_folder, sim_date),
-                                               skeleton = "bringmann_2017_dataset2",
-                                               omitvar_only = FALSE)
+# bringmann_2_nonomit_out <- extract_sim_results(paste0(sim_folder, sim_date),
+#                                                skeleton = "bringmann_2017_dataset2",
+#                                                omitvar_only = FALSE)
 
+# Function for ord label
+convert_ord_label <- function(x) {
+  tools::toTitleCase(tail(strsplit(x, "ord")[[1]], 1))
+}
+convert_ord_label <- Vectorize(convert_ord_label)
 
 # Fix the max node computation (DONE)
 # Merge this with non-omitted results
@@ -82,11 +87,30 @@ plot_radar <- function(avg_data_to_plot,
                        mod_data_to_plot,
                        avg_column_to_plot,
                        mod_column_to_plot,
-                       ordascont_val = FALSE) {
+                       ordascont_val = FALSE,
+                       node_size = 6.5) {
 
   # Subset data
   avg_data_to_plot <- avg_data_to_plot %>% filter(ordascont == ordascont_val)
   mod_data_to_plot <- mod_data_to_plot %>% filter(ordascont == ordascont_val)
+
+  # Add number of ordinal categories to plot
+  avg_data_to_plot <- avg_data_to_plot %>%
+    mutate(ord_cls_lab = convert_ord_label(ord_cls))
+
+  # Facet object
+  create_numOrd_plot_label <- function(string) {
+    paste("Ordinal Levels: ", string)
+  }
+  create_T_plot_label <- function(string) {
+    paste("T: ", string)
+  }
+
+  # Set facet object
+  facet_obj <- facet_grid(ord_cls_lab ~ num_timepts ,
+                          labeller = labeller(ord_cls_lab = create_numOrd_plot_label,
+                                              num_timepts = create_T_plot_label,
+                                              switch = "y"))
 
   # Generate Plot
   ggplot(avg_data_to_plot, aes(x = omit_var)) +
@@ -124,10 +148,10 @@ plot_radar <- function(avg_data_to_plot,
       axis.ticks = element_blank(),
       axis.text.y = element_blank(),
       # Use gray text for the region names
-      axis.text.x = element_text(color = "gray12", size = 4.5),
+      axis.text.x = element_text(color = "gray12", size = node_size),
 
       text = element_text(color = "gray12", family = "Bell MT"),
-      plot.title = element_text(face = "bold", size = 10, hjust = 0.05),
+      plot.title = element_text(face = "bold", size = 15, hjust = 0.05),
       plot.subtitle = element_text(size = 8, hjust = 0.05),
       plot.caption = element_text(size = 8, hjust = .5),
 
@@ -137,21 +161,37 @@ plot_radar <- function(avg_data_to_plot,
       # plot.background = element_blank(),
       legend.position = "right"
     ) +
-    facet_grid(ord_cls ~ num_timepts)
+    # facet_grid(ord_cls ~ num_timepts)
+    facet_obj
 
 }
 
 
 # Wrapper function
-extract_and_plot <- function(raw_data, col_to_plot, ordascont_val = FALSE) {
+extract_and_plot <- function(raw_data, col_to_plot, ordascont_val = FALSE, node_size = 6.5) {
   ptable <- gen_tbl_for_plotting(raw_data,
                                  col_to_plot)
+
+  if (ptable$var_to_plot == "est_correct_max_node_omitvar") {
+    plt_label <- "Omitted Variables: P(Max Node Selected)"
+  } else if (ptable$var_to_plot == "est_max_in_top20p_nodes_omitvar") {
+    plt_label <- "Omitted Variables: P(Top 20% Node Selected)"
+  } else if (ptable$var_to_plot == "gramian_sp_rank_corr_omitvar") {
+    plt_label <- "Omitted Variables: $\\ \\rho_{\\ true, estimated}$"
+  } else {
+    stop("invalid plot")
+  }
   plot_radar(ptable$avg_tbl,
              ptable$mod_tbl,
              "metric_to_plot",
              col_to_plot,
-             ordascont_val = ordascont_val) +
-    ggtitle(paste(ptable$var_to_plot, "; ordascont = ", ordascont_val))
+             ordascont_val = ordascont_val,
+             node_size = node_size) +
+    ggtitle(latex2exp::TeX(paste(plt_label,
+                                 "  (",
+                                 ifelse(ordascont_val, "ML", "DWLS"),
+                                 ")",
+                                 sep = "")))
 }
 
 
@@ -169,13 +209,13 @@ extract_and_plot(bringmann_2_omitvar_out$main, "gramian_sp_rank_corr_omitvar", T
 # Demo variability
 extract_and_plot(bringmann_2_omitvar_out$main %>%
                   filter(ordascont == FALSE & mod_i == "model_13" & ord_cls == "ord5" & num_timepts == 1000),
-                 "est_correct_max_node_omitvar")
+                 "est_correct_max_node_omitvar", node_size = 10)
 extract_and_plot(bringmann_2_omitvar_out$main %>%
                    filter(ordascont == FALSE & mod_i == "model_1" & ord_cls == "ord5" & num_timepts == 1000),
-                 "est_correct_max_node_omitvar")
+                 "est_correct_max_node_omitvar", node_size = 10)
 extract_and_plot(bringmann_2_omitvar_out$main %>%
                    filter(ordascont == FALSE & mod_i == "model_89" & ord_cls == "ord5" & num_timepts == 1000),
-                 "est_correct_max_node_omitvar")
+                 "est_correct_max_node_omitvar", node_size = 10)
 
 # # Average across models
 # omit_var_mean_models <- bringmann_2_omitvar_out$main %>%
