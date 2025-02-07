@@ -105,7 +105,7 @@ extract_sim_results <- function(sim_dir,
 
 
 # Extract simulations
-sim_date   <- "20241111_225322"
+sim_date   <- "20250115_111042"
 sim_folder <- "/home/bing/Desktop/UNC-CH/projects/controlOrdTS_all/resources/simulations/"
 
 # Extract bringmann_1
@@ -121,12 +121,58 @@ scale_free_out <- extract_sim_results(paste0(sim_folder, sim_date),
                                       skeleton = "scale_free_seeded")
 
 
+# Function for ord label
+convert_ord_label <- function(x) {
+  tools::toTitleCase(tail(strsplit(x, "ord")[[1]], 1))
+}
+convert_ord_label <- Vectorize(convert_ord_label)
+
+
 # Plot differences between ordascont conditions
 plot_diff <- function(column, data_to_plot) {
 
+  # Plot title
+  if (data_to_plot$skeleton == "bringmann_2017_dataset1") {
+    plt_title <- "Bringmann's (2016) 6-Node System"
+  } else if (data_to_plot$skeleton == "bringmann_2017_dataset2") {
+    plt_title <- "Bringmann's (2016) 10-Node System"
+  } else if (data_to_plot$skeleton == "scale_free_seeded") {
+    plt_title <- "Scale Free Network"
+  } else {
+    stop("Invalid plot title")
+  }
+  # plt_title <- paste(plt_title, " [", addlabel, "]", sep = "")
+
+  # Y labels
+  if (column == "est_correct_max_node") {
+    addlabel <- paste(plt_title, "  [P(Max Node Selected)]", sep = "")
+  } else if (column == "est_max_in_top20p_nodes") {
+    addlabel <- paste(plt_title, "  P(Top 20% Node Selected)", sep = "")
+  } else if (column == "gramian_sp_rank_corr") {
+    addlabel <- latex2exp::TeX(paste(plt_title, "\\  [$\\rho_{\\ true, estimated}$]", sep = ""))
+  } else {
+    stop("Invalid column to plot")
+  }
+
+
+
+  # Add number of ordinal categories to plot
+  data_to_plot$main <- data_to_plot$main %>%
+    mutate(ord_cls_lab = convert_ord_label(ord_cls))
+
+  # Facet object
+  create_numOrd_plot_label <- function(string) {
+    paste("Ordinal Levels: ", string)
+  }
+
+  # Set facet object
+  facet_obj <- facet_grid(~ ord_cls_lab,
+                          labeller = labeller(ord_cls_lab = create_numOrd_plot_label,
+                                              switch = "y"))
+
   # Get difference in column
   diff_plot_data <- data_to_plot$main %>%
-    select(!!sym(column), mod_i, num_timepts, ord_cls, ordascont) %>%
+    select(!!sym(column), mod_i, num_timepts, ord_cls_lab, ordascont) %>%
     pivot_wider(names_from = ordascont, values_from = !!sym(column), names_prefix = "ordascont.") %>%
     mutate(ordascont_diff = ordascont.FALSE - ordascont.TRUE)
 
@@ -137,14 +183,14 @@ plot_diff <- function(column, data_to_plot) {
     geom_boxplot(outlier.size = 0.5) +
     geom_hline(yintercept = 0, lty = 3, alpha = 0.4) +
     scale_fill_viridis_c(option = "magma", begin = 0.6) +
-    facet_grid(~ord_cls) +
+    facet_obj +
     xlab("Number of Timepoints") +
-    ylab("<-- (ML)          (DWLS) -->") +
+    ylab(latex2exp::TeX("$\\leftarrow \\ \\ \\ (ML)  \\ \\ \\  (DWLS) \\ \\rightarrow$")) +
     scale_x_continuous(limits = c(0, 1050),
                        breaks = c(100, 250, 500, 1000)) +
     theme_bw() +
     theme(legend.position="none") +
-    ggtitle(paste(data_to_plot$skeleton, "(", column, ")"))
+    ggtitle(addlabel)
 
 
 }
@@ -155,6 +201,41 @@ plot_bars <- function(column, data_to_plot, log_y = FALSE, ordascont_val = FALSE
 
   print("[WARNING] y-axis is not constrained to be the same for different ordascont values")
 
+  # Plot title
+  if (data_to_plot$skeleton == "bringmann_2017_dataset1") {
+    plt_title <- "Bringmann's (2016) 6-Node System"
+  } else if (data_to_plot$skeleton == "bringmann_2017_dataset2") {
+    plt_title <- "Bringmann's (2016) 10-Node System"
+  } else if (data_to_plot$skeleton == "scale_free_seeded") {
+    plt_title <- "Scale Free Network"
+  } else {
+    stop("Invalid plot title")
+  }
+
+  # Y labels
+  use_ylim <- FALSE
+  if (column == "phi_mse") {
+    ylabel <- latex2exp::TeX("$\\log(\\Phi_{\\ mse})$")
+  } else if (column == "est_correct_max_node") {
+    ylabel <- "P(Max Node Selected)"
+    use_ylim <- TRUE
+    ylimits <- c(0,1)
+  } else if (column == "est_max_in_top20p_nodes") {
+    ylabel <- "P(Top 20% Node Selected)"
+    use_ylim <- TRUE
+    ylimits <- c(0,1)
+  } else if (column == "gramian_sp_rank_corr") {
+    ylabel <- latex2exp::TeX("$\\rho_{\\ true, estimated}$")
+    use_ylim <- TRUE
+    ylimits <- c(-1,1)
+  } else {
+    stop("Invalid column to plot")
+  }
+
+  # Add number of ordinal categories to plot
+  data_to_plot$main <- data_to_plot$main %>%
+    mutate(ord_cls_lab = convert_ord_label(ord_cls))
+
   if (log_y) {
     plot_obj <- ggplot(data_to_plot$main %>% filter(ordascont == ordascont_val),
                        aes(x = num_timepts, y = log(!!sym(column)),
@@ -164,23 +245,40 @@ plot_bars <- function(column, data_to_plot, log_y = FALSE, ordascont_val = FALSE
                        aes(x = num_timepts, y = !!sym(column),
                            group = num_timepts, fill = log(num_timepts)))
   }
-  plot_obj +
+
+  # Facet object
+  create_numOrd_plot_label <- function(string) {
+    paste("Ordinal Levels: ", string)
+  }
+
+  # Set facet object
+  facet_obj <- facet_grid(~ ord_cls_lab,
+                          labeller = labeller(ord_cls_lab = create_numOrd_plot_label,
+                          switch = "y"))
+
+  plot_obj <- plot_obj +
     geom_boxplot(outlier.size = 0.5) +
     scale_fill_viridis_c(option = "magma", begin = 0.6) +
-    facet_grid(~ord_cls) +
+    facet_obj +
     xlab("Number of Timepoints") +
+    ylab(ylabel) +
     scale_x_continuous(limits = c(0, 1050),
                        breaks = c(100, 250, 500, 1000)) +
     theme_bw() +
     theme(legend.position="none") +
-    ggtitle(data_to_plot$skeleton)
+    ggtitle(plt_title)
+
+  if (use_ylim) {
+    plot_obj <- plot_obj + ylim(ylimits)
+  }
+  return(plot_obj)
 
 }
 
 # Plot the results
 # Bringmann 1
 plot_bars("phi_mse", bringmann_1_out, log_y = TRUE)
-plot_bars("psi_mse", bringmann_1_out, log_y = TRUE)
+# plot_bars("psi_mse", bringmann_1_out, log_y = TRUE)
 plot_bars("est_correct_max_node", bringmann_1_out)
 plot_bars("est_max_in_top20p_nodes", bringmann_1_out)
 plot_bars("gramian_sp_rank_corr", bringmann_1_out)
@@ -191,7 +289,7 @@ plot_diff("gramian_sp_rank_corr", bringmann_1_out)
 
 # Bringmann 2
 plot_bars("phi_mse", bringmann_2_out, log_y = TRUE)
-plot_bars("psi_mse", bringmann_2_out, log_y = TRUE)
+# plot_bars("psi_mse", bringmann_2_out, log_y = TRUE)
 plot_bars("est_correct_max_node", bringmann_2_out)
 plot_bars("est_max_in_top20p_nodes", bringmann_2_out)
 plot_bars("gramian_sp_rank_corr", bringmann_2_out)
@@ -202,7 +300,7 @@ plot_diff("gramian_sp_rank_corr", bringmann_2_out)
 
 # Scale free
 plot_bars("phi_mse", scale_free_out, log_y = TRUE)
-plot_bars("psi_mse", scale_free_out, log_y = TRUE)
+# plot_bars("psi_mse", scale_free_out, log_y = TRUE)
 plot_bars("est_correct_max_node", scale_free_out)
 plot_bars("est_max_in_top20p_nodes", scale_free_out)
 plot_bars("gramian_sp_rank_corr", scale_free_out)
