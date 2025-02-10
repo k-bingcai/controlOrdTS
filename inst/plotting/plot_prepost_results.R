@@ -10,7 +10,7 @@ setwd(this.dir)
 source("plot_common.R")
 
 # Specifics
-sim_date <- "20241126_231346"
+sim_date <- "20250115_111042"
 sim_folder <- "/home/bing/Desktop/UNC-CH/projects/controlOrdTS_all/resources/simulations/"
 
 # Extract data
@@ -29,7 +29,8 @@ bringmann_2_prepost_out <- extract_sim_results(paste0(sim_folder, sim_date),
 bringmann_2_prepost_out$main %>%
   filter(ord_cls == "ordinf" & num_timepts == 1000 & ordascont == FALSE) %>%
   pull(true_post_minus_pre_trace_gramian) %>%
-  hist(breaks = 20, main = "Histogram of Post-Pre Trace Gramian")
+  hist(breaks = 20, main = "Histogram of True Differences",
+       xlab = latex2exp::TeX("$tr(\\Phi_{\\ pre}) \\ - \\ \\ tr(\\Phi_{ \\ post})$"))
 
 # Create plot (trace gramian)
 plot_boxplots("post_minus_pre_trace_gramian_rel_bias", bringmann_2_prepost_out, log_y = TRUE) +
@@ -41,8 +42,11 @@ plot_boxplots("post_minus_pre_trace_gramian_rel_bias", bringmann_2_prepost_out, 
 bringmann_2_prepost_out$main %>%
   filter(ord_cls == "ordinf" & num_timepts == 1000 & ordascont == FALSE) %>%
   pull(true_prepost_gramian_sp_rank_corr) %>%
-  hist(breaks = 20, main = "Histogram of Correlation between Pre and Post")
+  hist(breaks = 20, main = "Histogram of True Pre-Post Correlation",
+       xlab = latex2exp::TeX("$\\rho_{\\ pre, post}$"))
 
 # Create plot (diff correlation)
-plot_boxplots("diff_prepost_gramian_sp_rank_corr", bringmann_2_prepost_out)
-plot_boxplots("diff_prepost_gramian_sp_rank_corr", bringmann_2_prepost_out, ordascont_val = TRUE)
+plot_boxplots("diff_prepost_gramian_sp_rank_corr", bringmann_2_prepost_out) +
+  geom_hline(yintercept = 0, lty = 3)
+plot_boxplots("diff_prepost_gramian_sp_rank_corr", bringmann_2_prepost_out, ordascont_val = TRUE) +
+  geom_hline(yintercept = 0, lty = 3)

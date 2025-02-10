@@ -140,6 +140,49 @@ extract_sim_results <- function(sim_dir,
 # Plot boxplots as a function of time
 plot_boxplots <- function(column, data_to_plot, log_y = FALSE, ordascont_val = FALSE) {
 
+  # Plot title
+  if (ordascont_val) {
+    estimator_lab <- "[ML]"
+  } else {
+    estimator_lab <- "[DWLS]"
+  }
+  if (data_to_plot$skeleton == "bringmann_2017_dataset2_prepost") {
+    plt_title <- paste("Bringmann's (2016) 10-Node System ", estimator_lab)
+  } else {
+    stop("Invalid plot title")
+  }
+
+  # Y labels
+  use_ylim <- FALSE
+  if (column == "post_minus_pre_trace_gramian_rel_bias") {
+    stopifnot(log_y)
+    ylabel <- latex2exp::TeX("$Log \\ [tr(\\Phi_{\\ pre}) \\ - \\ \\ tr(\\Phi_{ \\ post})]_{relbias} $")
+  } else if (column == "diff_prepost_gramian_sp_rank_corr") {
+    ylabel <- latex2exp::TeX("$[\\rho_{\\ pre, post}]_{true} \\ - \\ [\\rho_{\\ pre, post}]_{est}$")
+  } else {
+    stop("Invalid column to plot")
+  }
+
+  # Function for ord label
+  convert_ord_label <- function(x) {
+    tools::toTitleCase(tail(strsplit(x, "ord")[[1]], 1))
+  }
+  convert_ord_label <- Vectorize(convert_ord_label)
+
+  # Add number of ordinal categories to plot
+  data_to_plot$main <- data_to_plot$main %>%
+    mutate(ord_cls_lab = convert_ord_label(ord_cls))
+
+  # Facet object
+  create_numOrd_plot_label <- function(string) {
+    paste("Ordinal Levels: ", string)
+  }
+
+  # Set facet object
+  facet_obj <- facet_grid(~ ord_cls_lab,
+                          labeller = labeller(ord_cls_lab = create_numOrd_plot_label,
+                                              switch = "y"))
+
   print("[WARNING] y-axis is not constrained to be the same for different ordascont values")
 
   if (log_y) {
@@ -154,13 +197,14 @@ plot_boxplots <- function(column, data_to_plot, log_y = FALSE, ordascont_val = F
   plot_obj +
     geom_boxplot(outlier.size = 0.5) +
     scale_fill_viridis_c(option = "magma", begin = 0.6) +
-    facet_grid(~ord_cls) +
+    facet_obj +
+    ylab(ylabel) +
     xlab("Number of Timepoints") +
     scale_x_continuous(limits = c(0, 1050),
                        breaks = c(100, 250, 500, 1000)) +
     theme_bw() +
     theme(legend.position="none") +
-    ggtitle(data_to_plot$skeleton)
+    ggtitle(plt_title)
 
 }
 
