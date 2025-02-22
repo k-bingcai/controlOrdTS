@@ -10,7 +10,8 @@ run_and_plot_simulation(
   num_iter = 1000,
   centrality_type = c("degree", "betweenness", "closeness"),
   metric_type = c("max_node", "dgramian"),
-  plot_type = c("boxplot", "histogram", "correlation")
+  plot_type = c("boxplot", "histogram", "correlation_raw", "correlation_summary"),
+  force_boxplot = FALSE
 )
 }
 \description{

@@ -1,4 +1,6 @@
 #' Wrapper to fit a VAR in lavaan using the block-toeplitz method
+#' 
+#' @export
 fit_lavaan_VAR <- function(input_ts,
                            force_reorder = FALSE,
                            ord_as_cont = FALSE,

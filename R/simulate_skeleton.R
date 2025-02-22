@@ -237,10 +237,10 @@ two_broken_chains <- function(abs_cst = 1e-2, eig_cst = 0.5) {
 
   # Generate random matrix
   rand_m                <- m
-  rand_weights          <- rnorm(n = length(AB_idx))
-  rand_weights          <- rand_weights + sign(rand_weights) * abs_cst
-  rand_m[AB_idx]        <- clamp_min_weights(rand_weights, abs_cst = abs_cst)
-  rand_m[Z_idx]         <- rgamma(n = length(Z_idx), shape = 1, rate = 1)
+  rand_weights_signs    <- sample(c(1,-1), length(AB_idx), replace = TRUE)                                                        # rnorm(n = length(AB_idx))
+  rand_weights          <- rgamma(n = length(AB_idx), shape = 1, rate = 1) * rand_weights_signs + abs_cst                         # rand_weights + sign(rand_weights) * abs_cst
+  rand_m[AB_idx]        <- rand_weights                                                                                           # clamp_min_weights(rand_weights, abs_cst = abs_cst)
+  rand_m[Z_idx]         <- rgamma(n = length(Z_idx), shape = 1, rate = 1) + abs_cst
   class(rand_m)         <- "numeric"
   max_eigen             <- max(Mod(eigen(rand_m)$values))
   rand_m                <- rand_m / (max_eigen + eig_cst)
@@ -254,6 +254,7 @@ two_broken_chains <- function(abs_cst = 1e-2, eig_cst = 0.5) {
 
 #' Calculate centrality for each node based on the adjacency matrix
 #'
+#' @export
 adj_m_to_centrality <- function(input_adj_m,
                                 type = c("degree", "betweenness", "closeness")) {
 
@@ -405,10 +406,29 @@ sim_multiple_scale_free <- function(num_iter = 1000,
                                       num_iter = num_iter,
                                       out_type = "max_node")
       
+      # Function to extract nodes with max centrality
+      get_max_centrality <- function(centrality_vec) {
+        
+        # Get list containing ranking information 
+        ranking_info <- rank_nodes_centrality(centrality_vec)
+
+        # Check if there are any maximums
+        if (all(!ranking_info$node_breaks)) {
+          out_node <- NA 
+        } else {
+          # Get last TRUE value and extract the equivalent nodes 
+          last_break_index <- tail(which(ranking_info$node_breaks), 1)
+          out_node <- tail(ranking_info$node_order, -1 * last_break_index)
+        }
+
+        return(out_node)
+      }
+
       # Check how many max nodes agree 
       max_node_agree <- lapply(sim_results,
-                              function(x) {tail(rank_nodes_centrality(x[["centrality_out"]])$node_order,1) == x[["gramian_out"]]} )
-      prop_max_node_agree <- sum(unlist(max_node_agree)) / length(max_node_agree)
+                              function(x) { max_cent_nodes <- get_max_centrality(x[["centrality_out"]]);
+                                            ifelse(any(is.na(max_cent_nodes)), NA, any(max_cent_nodes %in% x[["gramian_out"]])) })
+      prop_max_node_agree <- mean(unlist(max_node_agree), na.rm = TRUE) 
 
       # Store results 
       all_results[res_index, "c_type"]                <- c_type
