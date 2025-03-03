@@ -163,7 +163,7 @@ run_and_plot_simulation(m_func = scale_free_seeded,
                         plot_type = "correlation_raw")
 
 ### --- Here we use multiple scale free models --- ###
-multi_sf_res <- sim_multiple_scale_free(num_seeds = 100)
+multi_sf_res <- sim_multiple_scale_free(num_seeds = 1000)
 ggplot(multi_sf_res,
        aes(x = c_type, y = prop_max_node_agree, fill = c_type)) +
   geom_boxplot(alpha = 0.4) +
