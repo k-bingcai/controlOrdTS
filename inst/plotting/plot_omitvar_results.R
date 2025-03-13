@@ -10,7 +10,7 @@ setwd(this.dir)
 source("plot_common.R")
 
 # Specifics
-sim_date <- "20241126_231346"
+sim_date <- "20250115_111042"
 sim_folder <- "/home/bing/Desktop/UNC-CH/projects/controlOrdTS_all/resources/simulations/"
 
 # Extract data

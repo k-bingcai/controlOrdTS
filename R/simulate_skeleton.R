@@ -519,7 +519,7 @@ run_and_plot_simulation <- function(m_func,
 
     # Common X label
     results_plot <- results_plot +
-      ggplot2::xlab(paste("Nodes ordered in increasing value of ", 
+      ggplot2::xlab(paste("Nodes partitioned in increasing value of ", 
                           stringr::str_to_title(centrality_type), sep = "")) + 
       ggplot2::theme(axis.text.x = ggplot2::element_text(size = 8),
                      axis.text.y = ggplot2::element_text(size = 8),
@@ -578,7 +578,7 @@ run_and_plot_simulation <- function(m_func,
 
     # Common X label
     results_plot <- results_plot +
-       ggplot2::xlab(paste("Nodes ordered in increasing value of ", 
+       ggplot2::xlab(paste("Nodes partitioned in increasing value of ", 
                           stringr::str_to_title(centrality_type), sep = "")) 
 
     # Add equivalent lines!
