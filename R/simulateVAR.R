@@ -18,11 +18,13 @@ simulateVAR <- R6::R6Class("simulateVAR",
         custom_name = NULL,
         custom_tags = NULL,
         valid_ord_cats = c(3,5,7),
+        skewed_thres = FALSE,
 
         # Initialization method
         initialize = function(Phi, Psi,
                               num.ord.max = 7,
-                              burn.in = 1000, max.tries = 100, fixed_params = TRUE) {
+                              burn.in = 1000, max.tries = 100, fixed_params = TRUE,
+                              skewed_thres = FALSE) {
 
             # Save inputs as attributes
             self$Phi            <- Phi
@@ -31,6 +33,7 @@ simulateVAR <- R6::R6Class("simulateVAR",
             self$burn.in        <- burn.in
             self$max.tries      <- max.tries
             self$fixed_params   <- fixed_params
+            self$skewed_thres   <- skewed_thres
 
             # Initialize saved_params
             self$saved_params <- NULL
@@ -243,9 +246,33 @@ simulateVAR <- R6::R6Class("simulateVAR",
             # Generate time series 
             params <- private$generate_raw_ts(params = params, time_len = time_len)
 
-            # Generate random thresholds based on quantiles; we use a symmetric dirichlet
-            rand_unsummed_quantiles   <- extraDistr::rdirichlet(n = ncol(params[["raw.ts"]]),
-                                                                alpha = rep(5, self$num.ord.max))
+            # Generate random thresholds based on quantiles;
+            if (self$skewed_thres) {
+
+                # Use non-uniform dirichlet
+                rand_unsummed_quantiles_orig   <- extraDistr::rdirichlet(n = ncol(params[["raw.ts"]]),
+                                                                         alpha = exp(seq(from = 1,
+                                                                                         by = 0.3,
+                                                                                         length.out = 7)))
+                # Randomly reverse each row of a matrix
+                rand_unsummed_quantiles <- t(apply(rand_unsummed_quantiles_orig, 1, function(row) {
+                  if (runif(1) < 0.5) {
+                    rev(row)  # Flip the row
+                  } else {
+                    row       # Keep it as is
+                  }
+                }))
+
+            } else {
+                # we use a symmetric dirichlet
+                rand_unsummed_quantiles   <- extraDistr::rdirichlet(n = ncol(params[["raw.ts"]]),
+                                                                    alpha = rep(5, self$num.ord.max))
+            }
+
+            # Save quantiles 
+            params[["rand_unsummed_quantiles"]] <- t(rand_unsummed_quantiles)
+
+            # Preprocess as cumulative sum
             person_i_q_thres          <- t(apply(rand_unsummed_quantiles, 1, cumsum))
 
             # Drop last column of 1s and store as list
@@ -411,12 +438,20 @@ simulateVAR <- R6::R6Class("simulateVAR",
                 } else if (num.ord.out == 5) {
                 
                     # If we use 5 point scale 
-                    thres.used <- params[["raw.thres"]][c(1,2,5,6),]
+                    if (self$skewed_thres) {
+                        thres.used <- params[["raw.thres"]][c(2,3,4,5),]   # Drop extreme categories 
+                    } else {
+                        thres.used <- params[["raw.thres"]][c(1,2,5,6),]
+                    }
 
                 } else if (num.ord.out == 3) {
 
                     # If we use a 3 point scale
-                    thres.used <- params[["raw.thres"]][c(1,6),]
+                    if (self$skewed_thres) {
+                        thres.used <- params[["raw.thres"]][c(3,4),]      # Drop extreme categories
+                    } else {
+                        thres.used <- params[["raw.thres"]][c(1,6),]
+                    }
 
                 } else {
                 
@@ -427,6 +462,9 @@ simulateVAR <- R6::R6Class("simulateVAR",
                 }
 
             } else if (self$num.ord.max == 5) {
+
+                # Only allow max 7 thresholds                
+                stop("ERROR: num.ord.max == 5 is deprecated.")
 
                 # Select subset of thresholds based on output type
                 if (num.ord.out == 5) {
@@ -448,6 +486,9 @@ simulateVAR <- R6::R6Class("simulateVAR",
                 }
 
             } else if (self$num.ord.max == 3) {
+
+                # Only allow max 7 thresholds                
+                stop("ERROR: num.ord.max == 3 is deprecated.")
 
                 if (num.ord.out == 3) {
                     thres.used <- params[["raw.thres"]]

@@ -25,6 +25,7 @@ Imports:
     qgraph,
     stringr,
     tidyr,
-    magrittr
+    magrittr,
+    mvtnorm
 URL: https://github.com/k-bingcai/controlOrdTS
 BugReports: https://github.com/k-bingcai/controlOrdTS/issues
