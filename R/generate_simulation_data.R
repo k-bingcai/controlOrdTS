@@ -10,7 +10,8 @@
 #'
 #' @export
 create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7,
-                           obj_label = NULL) {
+                           obj_label = NULL, 
+                           skewed_thres = FALSE) {
 
     # Create random matrix with eigenvalues of norm < 1 (i.e. in the unit circle)
     phi_m <- do.call("phi.func", c(phi.func.args))
@@ -37,7 +38,8 @@ create_sim_obj <- function(phi.func, phi.func.args = list(), num.ord.max = 7,
     sim_obj <- simulateVAR$new(Phi = sVAR_params$Phi,
                                Psi = sVAR_params$Psi,
                                num.ord.max = num.ord_in,
-                               fixed_params = TRUE)
+                               fixed_params = TRUE,
+                               skewed_thres = skewed_thres)
     sim_obj$initialize_models()
 
     # Set custom name and tags
