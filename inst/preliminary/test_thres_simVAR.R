@@ -6,6 +6,11 @@ load_all()
 # Change this
 use_skew <- TRUE
 
+# Thresholds to use
+thres_use <- 1:6
+
+
+
 nvars <- 6
 Psi <- random_Psi(nvars)
 Phi <- bringmann_2017_dataset1()
@@ -26,11 +31,11 @@ for (j in 1:nvars) {
     abline(v = actual_thres[thres_use,][[paste0("V",j)]][x],
            col = 'red', lty = 2)
   }
-  
+
 }
 
 
-# Compute skew 
+# Compute skew
 # Function to compute skew (discrete)
 skew_disc <- function(p) {
   stopifnot(abs(1 - sum(p)) < 1e-7)
@@ -45,28 +50,28 @@ skew_disc <- function(p) {
   return(p_skew)
 }
 
-# Generate data 
+# Generate data
 gen_ts <- newVAR$generate_ts_from_model()
 
-# Actual quantiles used 
+# Actual quantiles used
 newVAR$saved_params$rand_unsummed_quantiles
 
-# Try different ordinal outputs 
+# Try different ordinal outputs
 for (numorduse in c("7", "5", "3")) {
   for (v_i in 1:nvars) {
-    
+
     ord_data <- gen_ts$ord.ts[[numorduse]][[paste0("V", v_i)]]
     probs    <- table(ord_data) / length(ord_data)
     skew_v_i <- skew_disc(probs)
     barplot(probs, main = paste("Skew:", round(skew_v_i, 3)))
-    
-    
+
+
   }
 }
 
 
 
-# Rhumtella's 
+# Rhumtella's
 # Normal - 3 cat - skew = -1.41
 # Normal - 5 cat - skew = -0.90
 # Normal - 7 cat - skew = -0.78
